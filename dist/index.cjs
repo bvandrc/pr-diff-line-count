@@ -49785,7 +49785,7 @@ function pick2(obj, keys) {
 var import_picomatch = __toESM(require_picomatch2(), 1);
 var NON_SOURCE_CATEGORIES = ["tests", "generated", "docs", "config"];
 var FILE_CATEGORIES = ["source", ...NON_SOURCE_CATEGORIES];
-var MACHINE_READ_TEXT_GLOBS = [
+var CONFIG_TXT_GLOBS = [
   "**/requirements*.txt",
   "**/requirements/**",
   "**/constraints*.txt",
@@ -49847,7 +49847,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.rst",
     "**/*.adoc",
     "**/*.txt",
-    ...excluding(MACHINE_READ_TEXT_GLOBS),
+    ...excluding(CONFIG_TXT_GLOBS),
     "**/docs/**",
     "**/LICENSE*"
   ],
@@ -49860,7 +49860,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.cfg",
     "**/.editorconfig",
     "**/.python-version",
-    ...MACHINE_READ_TEXT_GLOBS,
+    ...CONFIG_TXT_GLOBS,
     "**/setup.py",
     "**/Pipfile",
     "**/MANIFEST.in",

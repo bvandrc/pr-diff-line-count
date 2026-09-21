@@ -40,11 +40,11 @@ export type DiffTally = {
 }
 
 /**
- * Paths a machine reads that the broad `.txt` glob would otherwise hand to
- * docs. `config` claims them and `docs` excludes them from this one list, so
- * the two cannot drift into a file being both or neither.
+ * The `.txt` paths a machine reads, which the broad `.txt` glob would
+ * otherwise hand to docs. `config` claims them and `docs` excludes them from
+ * this one list, so the two cannot drift into a file being both or neither.
  */
-const MACHINE_READ_TEXT_GLOBS = [
+const CONFIG_TXT_GLOBS = [
   '**/requirements*.txt',
   '**/requirements/**',
   '**/constraints*.txt',
@@ -113,7 +113,7 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.rst',
     '**/*.adoc',
     '**/*.txt',
-    ...excluding(MACHINE_READ_TEXT_GLOBS),
+    ...excluding(CONFIG_TXT_GLOBS),
     '**/docs/**',
     '**/LICENSE*',
   ],
@@ -126,7 +126,7 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.cfg',
     '**/.editorconfig',
     '**/.python-version',
-    ...MACHINE_READ_TEXT_GLOBS,
+    ...CONFIG_TXT_GLOBS,
     '**/setup.py',
     '**/Pipfile',
     '**/MANIFEST.in',

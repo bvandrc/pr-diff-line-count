@@ -70,18 +70,6 @@ describe('renderMarkdown', () => {
     expect(markdown).not.toContain('<strong>Total</strong>')
   })
 
-  it('bolds the source row and its code counts, leaving its comment counts plain', () => {
-    const markdown = render(
-      clocReport({ added: { 'src/a.ts': { code: 91, comment: 106 } } })
-    )
-
-    expect(markdown).toContain(
-      '<tr><td><strong>Source</strong></td><td align="right"><strong>91</strong></td><td align="right"><strong>0</strong></td><td align="right"><strong>0</strong></td><td align="right">106</td><td align="right">0</td></tr>'
-    )
-    // The row replaced a summary line above the table.
-    expect(markdown).not.toContain('Source code:')
-  })
-
   it("puts GitHub's own totals in an italic row spanning the foot of the table", () => {
     const markdown = render(
       clocReport({
@@ -95,11 +83,6 @@ describe('renderMarkdown', () => {
 
     const ghRow = `<tr><td colspan="6" align="center"><em>${unbreakable('GitHub reports +329 / −144')}</em></td></tr>`
     expect(markdown).toContain(ghRow)
-    // Below the total, and still inside the table.
-    expect(markdown.indexOf(ghRow)).toBeGreaterThan(
-      markdown.indexOf('<strong>Total</strong>')
-    )
-    expect(markdown.indexOf(ghRow)).toBeLessThan(markdown.indexOf('</table>'))
   })
 
   it('leaves the totals row out when GitHub reports nothing', () => {

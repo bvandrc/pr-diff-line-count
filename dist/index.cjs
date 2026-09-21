@@ -49930,9 +49930,7 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
     (category) => category === "source" ? row(
       `<strong>${CATEGORY_LABELS.source}</strong>`,
       tally.byCategory.source,
-      {
-        boldCode: true
-      }
+      { boldCode: true }
     ) : row(CATEGORY_LABELS[category], tally.byCategory[category])
   );
   if (shown.length > 1) rows.push(row("<strong>Total</strong>", tally.total));

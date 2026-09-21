@@ -15,18 +15,19 @@ The comment, and the summary table with it:
 <table>
 <tr><td>
 
-**Source code: +91 / ~68 / −9** &nbsp;·&nbsp; GitHub reports +329 / −144
+**Source&nbsp;code:&nbsp;+91&nbsp;/&nbsp;~68&nbsp;/&nbsp;−9** &nbsp;·&nbsp; GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144
 
-|  | +&nbsp;code | ~&nbsp;code | −&nbsp;code | +&nbsp;comment | −&nbsp;comment |
-| :-- | --: | --: | --: | --: | --: |
-| Source | 91 | 68 | 9 | 106 | 42 |
-| Tests | 12 | 0 | 0 | 4 | 0 |
-| Docs | 6 | 0 | 0 | 0 | 0 |
-| Config | 8 | 0 | 0 | 0 | 0 |
-| **Total** | 117 | 68 | 9 | 110 | 42 |
+<table>
+<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
+<tr><td></td><th align="right">+</th><th align="right">~</th><th align="right">−</th><th align="right">+</th><th align="right">−</th></tr>
+<tr><td>Source</td><td align="right">91</td><td align="right">68</td><td align="right">9</td><td align="right">106</td><td align="right">42</td></tr>
+<tr><td>Tests</td><td align="right">12</td><td align="right">0</td><td align="right">0</td><td align="right">4</td><td align="right">0</td></tr>
+<tr><td>Docs</td><td align="right">6</td><td align="right">0</td><td align="right">0</td><td align="right">0</td><td align="right">0</td></tr>
+<tr><td>Config</td><td align="right">8</td><td align="right">0</td><td align="right">0</td><td align="right">0</td><td align="right">0</td></tr>
+<tr><td><strong>Total</strong></td><td align="right">117</td><td align="right">68</td><td align="right">9</td><td align="right">110</td><td align="right">42</td></tr>
+</table>
 
 <sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>
-
 <sub>Blank lines are excluded above: +34 / −25.</sub>
 
 </td></tr>

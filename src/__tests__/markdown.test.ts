@@ -19,14 +19,15 @@ const GLOBS = {
   config: ['**/*.json', '**/*.yml'],
 } as const satisfies CategoryGlobs
 
-/** The cells of one table row, so a case can assert numbers without the markdown. */
+/** The cells of one table row, so a case can assert numbers without the markup. */
 const rowCells = (markdown: string, label: string) =>
   markdown
     .split('\n')
-    // Trim first: the table pads every cell to its column's width.
-    .map((line) => line.split('|').map((cell) => cell.trim()))
-    .find((cells) => cells[1] === label)
-    ?.slice(2, -1)
+    .map((line) =>
+      [...line.matchAll(/<td[^>]*>(.*?)<\/td>/g)].map(([, cell]) => cell)
+    )
+    .find((cells) => cells[0] === label)
+    ?.slice(1)
 
 const render = (report: ClocDiffReport, globs: CategoryGlobs = GLOBS) =>
   renderMarkdown(tallyDiff(report, globs))
@@ -46,7 +47,7 @@ describe('renderMarkdown', () => {
     // Distinct values in every column: the order is what this pins.
     expect(rowCells(markdown, 'Source')).toEqual(['91', '0', '9', '106', '42'])
     expect(rowCells(markdown, 'Tests')).toEqual(['7', '0', '0', '2', '0'])
-    expect(rowCells(markdown, '**Total**')).toEqual([
+    expect(rowCells(markdown, '<strong>Total</strong>')).toEqual([
       '98',
       '0',
       '9',
@@ -60,13 +61,13 @@ describe('renderMarkdown', () => {
   it('omits the total row when only one category changed', () => {
     const markdown = render(clocReport({ added: { 'src/a.ts': { code: 5 } } }))
 
-    expect(markdown).not.toContain('**Total**')
+    expect(markdown).not.toContain('<strong>Total</strong>')
   })
 
   it('reports an empty diff as no counted changes', () => {
     const markdown = render({})
 
     expect(markdown).toContain('No counted line changes')
-    expect(markdown).not.toContain('+&nbsp;code')
+    expect(markdown).not.toContain('<table>')
   })
 })

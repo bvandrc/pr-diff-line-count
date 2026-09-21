@@ -49757,147 +49757,6 @@ function pick2(obj, keys) {
   return result;
 }
 
-// node_modules/.pnpm/markdown-table@3.0.4/node_modules/markdown-table/index.js
-function defaultStringLength(value) {
-  return value.length;
-}
-function markdownTable(table, options) {
-  const settings = options || {};
-  const align = (settings.align || []).concat();
-  const stringLength = settings.stringLength || defaultStringLength;
-  const alignments = [];
-  const cellMatrix = [];
-  const sizeMatrix = [];
-  const longestCellByColumn = [];
-  let mostCellsPerRow = 0;
-  let rowIndex = -1;
-  while (++rowIndex < table.length) {
-    const row3 = [];
-    const sizes2 = [];
-    let columnIndex2 = -1;
-    if (table[rowIndex].length > mostCellsPerRow) {
-      mostCellsPerRow = table[rowIndex].length;
-    }
-    while (++columnIndex2 < table[rowIndex].length) {
-      const cell = serialize(table[rowIndex][columnIndex2]);
-      if (settings.alignDelimiters !== false) {
-        const size = stringLength(cell);
-        sizes2[columnIndex2] = size;
-        if (longestCellByColumn[columnIndex2] === void 0 || size > longestCellByColumn[columnIndex2]) {
-          longestCellByColumn[columnIndex2] = size;
-        }
-      }
-      row3.push(cell);
-    }
-    cellMatrix[rowIndex] = row3;
-    sizeMatrix[rowIndex] = sizes2;
-  }
-  let columnIndex = -1;
-  if (typeof align === "object" && "length" in align) {
-    while (++columnIndex < mostCellsPerRow) {
-      alignments[columnIndex] = toAlignment(align[columnIndex]);
-    }
-  } else {
-    const code = toAlignment(align);
-    while (++columnIndex < mostCellsPerRow) {
-      alignments[columnIndex] = code;
-    }
-  }
-  columnIndex = -1;
-  const row2 = [];
-  const sizes = [];
-  while (++columnIndex < mostCellsPerRow) {
-    const code = alignments[columnIndex];
-    let before = "";
-    let after = "";
-    if (code === 99) {
-      before = ":";
-      after = ":";
-    } else if (code === 108) {
-      before = ":";
-    } else if (code === 114) {
-      after = ":";
-    }
-    let size = settings.alignDelimiters === false ? 1 : Math.max(
-      1,
-      longestCellByColumn[columnIndex] - before.length - after.length
-    );
-    const cell = before + "-".repeat(size) + after;
-    if (settings.alignDelimiters !== false) {
-      size = before.length + size + after.length;
-      if (size > longestCellByColumn[columnIndex]) {
-        longestCellByColumn[columnIndex] = size;
-      }
-      sizes[columnIndex] = size;
-    }
-    row2[columnIndex] = cell;
-  }
-  cellMatrix.splice(1, 0, row2);
-  sizeMatrix.splice(1, 0, sizes);
-  rowIndex = -1;
-  const lines = [];
-  while (++rowIndex < cellMatrix.length) {
-    const row3 = cellMatrix[rowIndex];
-    const sizes2 = sizeMatrix[rowIndex];
-    columnIndex = -1;
-    const line = [];
-    while (++columnIndex < mostCellsPerRow) {
-      const cell = row3[columnIndex] || "";
-      let before = "";
-      let after = "";
-      if (settings.alignDelimiters !== false) {
-        const size = longestCellByColumn[columnIndex] - (sizes2[columnIndex] || 0);
-        const code = alignments[columnIndex];
-        if (code === 114) {
-          before = " ".repeat(size);
-        } else if (code === 99) {
-          if (size % 2) {
-            before = " ".repeat(size / 2 + 0.5);
-            after = " ".repeat(size / 2 - 0.5);
-          } else {
-            before = " ".repeat(size / 2);
-            after = before;
-          }
-        } else {
-          after = " ".repeat(size);
-        }
-      }
-      if (settings.delimiterStart !== false && !columnIndex) {
-        line.push("|");
-      }
-      if (settings.padding !== false && // Don’t add the opening space if we’re not aligning and the cell is
-      // empty: there will be a closing space.
-      !(settings.alignDelimiters === false && cell === "") && (settings.delimiterStart !== false || columnIndex)) {
-        line.push(" ");
-      }
-      if (settings.alignDelimiters !== false) {
-        line.push(before);
-      }
-      line.push(cell);
-      if (settings.alignDelimiters !== false) {
-        line.push(after);
-      }
-      if (settings.padding !== false) {
-        line.push(" ");
-      }
-      if (settings.delimiterEnd !== false || columnIndex !== mostCellsPerRow - 1) {
-        line.push("|");
-      }
-    }
-    lines.push(
-      settings.delimiterEnd === false ? line.join("").replace(/ +$/, "") : line.join("")
-    );
-  }
-  return lines.join("\n");
-}
-function serialize(value) {
-  return value === null || value === void 0 ? "" : String(value);
-}
-function toAlignment(value) {
-  const code = typeof value === "string" ? value.codePointAt(0) : 0;
-  return code === 67 || code === 99 ? 99 : code === 76 || code === 108 ? 108 : code === 82 || code === 114 ? 114 : 0;
-}
-
 // src/tally.ts
 var import_picomatch = __toESM(require_picomatch2(), 1);
 var NON_SOURCE_CATEGORIES = ["tests", "generated", "docs", "config"];
@@ -50010,19 +49869,27 @@ var CATEGORY_LABELS = {
   docs: "Docs",
   config: "Config"
 };
+var COLUMN_GROUPS = [
+  { label: "code", signs: ["+", "~", "\u2212"] },
+  { label: "comment", signs: ["+", "\u2212"] }
+];
 var githubDiffTotalsSchema = external_exports.object({
   additions: external_exports.number(),
   deletions: external_exports.number()
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
+var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 var row = (label, tally) => [
-  label,
-  tally.added.code,
-  tally.modified.code,
-  tally.removed.code,
-  tally.added.comment,
-  tally.removed.comment
-].map(String);
+  `<td>${label}</td>`,
+  // Counts read as columns of digits; only the labels want the left edge.
+  ...[
+    tally.added.code,
+    tally.modified.code,
+    tally.removed.code,
+    tally.added.comment,
+    tally.removed.comment
+  ].map((count) => `<td align="right">${count}</td>`)
+].join("");
 function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   const lines = ["### PR Diff Line Count"];
   const shown = FILE_CATEGORIES.filter(
@@ -50037,32 +49904,22 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   const rows = shown.map(
     (category) => row(CATEGORY_LABELS[category], tally.byCategory[category])
   );
-  if (shown.length > 1) rows.push(row("**Total**", tally.total));
+  if (shown.length > 1) rows.push(row("<strong>Total</strong>", tally.total));
   const source = tally.byCategory.source;
-  const ghTotalsStr = ghTotals ? ` &nbsp;\xB7&nbsp; GitHub reports +${ghTotals.additions} / \u2212${ghTotals.deletions}` : "";
+  const ghTotalsStr = ghTotals ? ` &nbsp;\xB7&nbsp; ${unbreakable(`GitHub reports +${ghTotals.additions} / \u2212${ghTotals.deletions}`)}` : "";
   lines.push(
-    `**Source code: +${source.added.code} / ~${source.modified.code} / \u2212${source.removed.code}**${ghTotalsStr}`,
-    markdownTable(
-      [
-        [
-          // headers
-          "",
-          ...[
-            ["+", "code"],
-            ["~", "code"],
-            ["\u2212", "code"],
-            ["+", "comment"],
-            ["\u2212", "comment"]
-          ].map(([sign, label]) => `${sign}&nbsp;${label}`)
-        ],
-        // rows
-        ...rows
-      ],
-      // Counts read as columns of digits; only the labels want the left edge.
-      { align: ["l", "r", "r", "r", "r", "r"] }
-    ),
-    `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>`,
-    `<sub>Blank lines are excluded above: +${tally.total.added.blank} / \u2212${tally.total.removed.blank}.</sub>`
+    `**${unbreakable(`Source code: +${source.added.code} / ~${source.modified.code} / \u2212${source.removed.code}`)}**${ghTotalsStr}`,
+    [
+      "<table>",
+      `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join("")}</tr>`,
+      `<tr><td></td>${COLUMN_GROUPS.flatMap(({ signs }) => signs).map((sign) => `<th align="right">${sign}</th>`).join("")}</tr>`,
+      ...rows.map((cells) => `<tr>${cells}</tr>`),
+      "</table>"
+    ].join("\n"),
+    [
+      `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>`,
+      `<sub>Blank lines are excluded above: +${tally.total.added.blank} / \u2212${tally.total.removed.blank}.</sub>`
+    ].join("\n")
   );
   return lines.join("\n\n");
 }

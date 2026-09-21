@@ -24,7 +24,6 @@
     "@actions/github": "^9",
     "@actions/tool-cache": "^4",
     "es-toolkit": "^1",
-    "markdown-table": "^3",
     "picomatch": "^4",
     "zod": "^4"
   },

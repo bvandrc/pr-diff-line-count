@@ -4,7 +4,6 @@
  */
 
 import { sum } from 'es-toolkit'
-import { markdownTable } from 'markdown-table'
 import { z } from 'zod'
 
 import { CHANGE_KINDS } from './cloc/run.ts'
@@ -24,6 +23,15 @@ const CATEGORY_LABELS = {
 } as const satisfies Record<FileCategory, string>
 
 /**
+ * The count columns, grouped under the header each group spans. The order is
+ * the order a row's cells are built in.
+ */
+const COLUMN_GROUPS = [
+  { label: 'code', signs: ['+', '~', '−'] },
+  { label: 'comment', signs: ['+', '−'] },
+] as const
+
+/**
  * GitHub's own PR-level counts, shown alongside ours so the gap is visible.
  * Exported as a schema because the event payload they come from is untyped.
  */
@@ -38,19 +46,28 @@ export type GithubDiffTotals = z.infer<typeof githubDiffTotalsSchema>
 const hasAnyLine = (tally: CategoryTally) =>
   sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0
 
+/** Keeps a phrase on one line, whatever the comment's width. */
+const unbreakable = (text: string) => text.replaceAll(' ', '&nbsp;')
+
 const row = (label: string, tally: CategoryTally) =>
   [
-    label,
-    tally.added.code,
-    tally.modified.code,
-    tally.removed.code,
-    tally.added.comment,
-    tally.removed.comment,
-  ].map(String)
+    `<td>${label}</td>`,
+    // Counts read as columns of digits; only the labels want the left edge.
+    ...[
+      tally.added.code,
+      tally.modified.code,
+      tally.removed.code,
+      tally.added.comment,
+      tally.removed.comment,
+    ].map((count) => `<td align="right">${count}</td>`),
+  ].join('')
 
 /**
  * Renders one diff as a table. Returns markdown ready to post or display, with
  * untouched categories left out of the table entirely.
+ *
+ * The table is HTML rather than markdown: the sign columns are grouped under a
+ * spanning `code` / `comment` header, and a markdown table has no colspan.
  */
 export function renderMarkdown(
   tally: DiffTally,
@@ -74,36 +91,28 @@ export function renderMarkdown(
   const rows = shown.map((category) =>
     row(CATEGORY_LABELS[category], tally.byCategory[category])
   )
-  if (shown.length > 1) rows.push(row('**Total**', tally.total))
+  if (shown.length > 1) rows.push(row('<strong>Total</strong>', tally.total))
 
   const source = tally.byCategory.source
   const ghTotalsStr = ghTotals
-    ? ` &nbsp;·&nbsp; GitHub reports +${ghTotals.additions} / −${ghTotals.deletions}`
+    ? ` &nbsp;·&nbsp; ${unbreakable(`GitHub reports +${ghTotals.additions} / −${ghTotals.deletions}`)}`
     : ''
 
   lines.push(
-    `**Source code: +${source.added.code} / ~${source.modified.code} / −${source.removed.code}**${ghTotalsStr}`,
-    markdownTable(
-      [
-        [
-          // headers
-          '',
-          ...[
-            ['+', 'code'],
-            ['~', 'code'],
-            ['−', 'code'],
-            ['+', 'comment'],
-            ['−', 'comment'],
-          ].map(([sign, label]) => `${sign}&nbsp;${label}`),
-        ],
-        // rows
-        ...rows,
-      ],
-      // Counts read as columns of digits; only the labels want the left edge.
-      { align: ['l', 'r', 'r', 'r', 'r', 'r'] }
-    ),
-    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>`,
-    `<sub>Blank lines are excluded above: +${tally.total.added.blank} / −${tally.total.removed.blank}.</sub>`
+    `**${unbreakable(`Source code: +${source.added.code} / ~${source.modified.code} / −${source.removed.code}`)}**${ghTotalsStr}`,
+    [
+      '<table>',
+      `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join('')}</tr>`,
+      `<tr><td></td>${COLUMN_GROUPS.flatMap(({ signs }) => signs)
+        .map((sign) => `<th align="right">${sign}</th>`)
+        .join('')}</tr>`,
+      ...rows.map((cells) => `<tr>${cells}</tr>`),
+      '</table>',
+    ].join('\n'),
+    [
+      `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>`,
+      `<sub>Blank lines are excluded above: +${tally.total.added.blank} / −${tally.total.removed.blank}.</sub>`,
+    ].join('\n')
   )
 
   return lines.join('\n\n')

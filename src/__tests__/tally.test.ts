@@ -172,6 +172,8 @@ describe('the shipped patterns', () => {
     ['pkg/thing_test.go', 'tests'],
     ['src/test/java/AppTest.java', 'tests'],
     ['tests/conftest.py', 'tests'],
+    ['api/users/test_auth.py', 'tests'],
+    ['api/users/auth_test.py', 'tests'],
     // Also the precedence pair with tsconfig.json below: both are `**/*.json`,
     // and generated is matched before config.
     ['package-lock.json', 'generated'],
@@ -179,13 +181,24 @@ describe('the shipped patterns', () => {
     ['migrations/0007_add_task_schedule.sql', 'generated'],
     ['api/service.pb.go', 'generated'],
     ['public/app.min.js', 'generated'],
+    ['uv.lock', 'generated'],
+    ['api/rpc/service_pb2.pyi', 'generated'],
+    ['src/thing.egg-info/PKG-INFO', 'generated'],
     ['README.md', 'docs'],
     ['docs/architecture.adoc', 'docs'],
     ['LICENSE', 'docs'],
+    ['CHANGELOG.rst', 'docs'],
     ['tsconfig.json', 'config'],
     ['.github/workflows/ci.yml', 'config'],
     ['Dockerfile', 'config'],
     ['infra/prod.tfvars', 'config'],
+    ['pyproject.toml', 'config'],
+    ['setup.cfg', 'config'],
+    ['setup.py', 'config'],
+    // `.txt` is not docs on its own, or every requirements file would be prose.
+    ['requirements.txt', 'config'],
+    ['requirements/dev.txt', 'config'],
+    ['MANIFEST.in', 'config'],
   ])('classifies %s as %s', (file, expected) => {
     expect(categoryOf(file)).toBe(expected)
   })

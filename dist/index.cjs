@@ -49786,6 +49786,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*_spec.*",
     "**/*Test.*",
     "**/*Tests.*",
+    "**/test_*.py",
     "**/conftest.py"
   ],
   generated: [
@@ -49795,6 +49796,9 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/bun.lockb",
     "**/Cargo.lock",
     "**/poetry.lock",
+    "**/Pipfile.lock",
+    "**/uv.lock",
+    "**/pdm.lock",
     "**/Gemfile.lock",
     "**/composer.lock",
     "**/go.sum",
@@ -49808,6 +49812,10 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.generated.*",
     "**/*.pb.go",
     "**/*_pb2.py",
+    "**/*_pb2.pyi",
+    "**/*_pb2_grpc.py",
+    "**/*.egg-info/**",
+    "**/__pycache__/**",
     "**/*.g.dart",
     "**/*.freezed.dart"
   ],
@@ -49816,9 +49824,11 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.mdx",
     "**/*.rst",
     "**/*.adoc",
-    "**/*.txt",
     "**/docs/**",
-    "**/LICENSE*"
+    "**/LICENSE*",
+    "**/README*",
+    "**/CHANGELOG*",
+    "**/NOTICE*"
   ],
   config: [
     "**/*.json",
@@ -49828,6 +49838,13 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.ini",
     "**/*.cfg",
     "**/.editorconfig",
+    "**/.python-version",
+    "**/requirements*.txt",
+    "**/requirements/**",
+    "**/constraints*.txt",
+    "**/setup.py",
+    "**/Pipfile",
+    "**/MANIFEST.in",
     "**/.github/**",
     "**/Dockerfile*",
     "**/*.tfvars"

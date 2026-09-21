@@ -17,13 +17,13 @@ The comment, and the summary table with it:
 
 **Source code: +91 / ~68 / −9** &nbsp;·&nbsp; GitHub reports +329 / −144
 
-|           | +&nbsp;code | ~&nbsp;code | −&nbsp;code | +&nbsp;comment | −&nbsp;comment |
-| :-------- | ----------: | ----------: | ----------: | -------------: | -------------: |
-| Source    |          91 |          68 |           9 |            106 |             42 |
-| Tests     |          12 |           0 |           0 |              4 |              0 |
-| Docs      |           6 |           0 |           0 |              0 |              0 |
-| Config    |           8 |           0 |           0 |              0 |              0 |
-| **Total** |         117 |          68 |           9 |            110 |             42 |
+|  | +&nbsp;code | ~&nbsp;code | −&nbsp;code | +&nbsp;comment | −&nbsp;comment |
+| :-- | --: | --: | --: | --: | --: |
+| Source | 91 | 68 | 9 | 106 | 42 |
+| Tests | 12 | 0 | 0 | 4 | 0 |
+| Docs | 6 | 0 | 0 | 0 | 0 |
+| Config | 8 | 0 | 0 | 0 | 0 |
+| **Total** | 117 | 68 | 9 | 110 | 42 |
 
 <sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>
 
@@ -93,12 +93,12 @@ CI here runs that path on every pull request, under `contents: read` alone, so i
 
 ## Inputs
 
-| Input          | Default               | Purpose                                                                                  |
-| -------------- | --------------------- | ---------------------------------------------------------------------------------------- |
-| `github-token` | `${{ github.token }}` | Token used to post the comment. Needs `pull-requests: write`.                            |
-| `comment`      | `true`                | Post the table as a sticky comment. Set `false` to use only the outputs and job summary. |
-| `base-sha`     | the PR's base         | Revision to count from. The merge base of the two is what gets counted.                  |
-| `head-sha`     | the PR's head         | Revision to count to.                                                                    |
+| Input | Default | Purpose |
+| --- | --- | --- |
+| `github-token` | `${{ github.token }}` | Token used to post the comment. Needs `pull-requests: write`. |
+| `comment` | `true` | Post the table as a sticky comment. Set `false` to use only the outputs and job summary. |
+| `base-sha` | the PR's base | Revision to count from. The merge base of the two is what gets counted. |
+| `head-sha` | the PR's head | Revision to count to. |
 
 Set both to run outside a `pull_request` event. The comment is skipped when there's no pull request to post it to.
 
@@ -145,11 +145,12 @@ That's the whole format: five categories plus a `total`, each with `added`, `mod
 Enough to gate on, with no `jq` step:
 
 ```yaml
-      - id: lines
-        uses: bvandrc/pr-diff-line-count@v1
+steps:
+  - id: lines
+    uses: bvandrc/pr-diff-line-count@v1
 
-      - if: fromJSON(steps.lines.outputs.json).byCategory.source.added.code > 400
-        run: echo "::warning::Large PR — consider splitting it."
+  - if: fromJSON(steps.lines.outputs.json).byCategory.source.added.code > 400
+    run: echo "::warning::Large PR — consider splitting it."
 ```
 
 `modified` counts a line changed in place **once**, rather than as an add plus a delete, so these numbers deliberately don't sum to GitHub's own `+/−`.

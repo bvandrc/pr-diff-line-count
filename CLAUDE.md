@@ -6,31 +6,30 @@ A GitHub Action that counts the code lines a pull request changes, separating co
 
 Conventions live outside this file, synced from https://github.com/bvandrc/bvandrc-conventions — follow all of them:
 
-@conventions/typescript.md — language-level TypeScript/JavaScript rules
-@conventions/all.md — practice for every repo: branches, formatting, markdown, PR reviews
+@conventions/typescript.md — language-level TypeScript/JavaScript rules @conventions/all.md — practice for every repo: branches, formatting, markdown, PR reviews
 
 `conventions/` is overwritten on every sync. Edit a rule upstream, never in that directory.
 
 `biome.jsonc` extends `conventions/biome.base.json`, so the lint and format rules are synced too rather than restated here. The only local addition is excluding the build output from checks.
 
-Biome does not format markdown, so **Prettier** owns `**/*.md` and nothing else — `.prettierignore` skips `dist/` and `conventions/` (the sync overwrites it, so formatting it here would only show up as a diff on the next sync). `proseWrap: "preserve"` keeps the no-hard-wrap rule, and `embeddedLanguageFormatting: "off"` leaves code fences alone, so the README's indented workflow snippets stay pasteable.
+Biome does not format markdown, so **Prettier** owns `**/*.md` and nothing else — `.prettierignore` skips `dist/` and `conventions/` (the sync overwrites it, so formatting it here would only show up as a diff on the next sync). `proseWrap: "never"` enforces the no-hard-wrap rule rather than merely tolerating it — it unwraps a hard-wrapped paragraph instead of passing it. The cost is that Prettier then stops padding table cells, so markdown tables are unaligned in source and only line up rendered. Code fences are formatted too (the default), so a YAML example has to be a valid document at column zero: write a fragment under a `steps:` key rather than indenting it by hand, or Prettier dedents it and the snippet stops being pasteable.
 
 ## Commands
 
 The package manager is **pnpm** — `packageManager` in `package.json` pins the version, and `corepack` or `pnpm/action-setup` reads it from there. `npm install` would write a `package-lock.json` nothing else honours.
 
-| Command           | Purpose                                                      |
-| ----------------- | ------------------------------------------------------------ |
-| `pnpm install`    | Install dependencies (`--frozen-lockfile` in CI)             |
-| `pnpm build`      | Bundle `src/` to `dist/index.cjs` with esbuild               |
-| `pnpm test:unit`  | Vitest unit tests                                            |
-| `pnpm lint`       | Biome lint                                                   |
-| `pnpm lint:md`    | Prettier check on markdown                                   |
-| `pnpm format`     | Biome format + markdown format — **run before every commit** |
-| `pnpm format:md`  | Prettier write on markdown                                   |
-| `pnpm ts:check`   | TypeScript check                                             |
-| `pnpm check`      | ts + lint + markdown check (what CI runs)                    |
-| `pnpm cloc:check` | Compare the pinned cloc release against upstream's latest    |
+| Command | Purpose |
+| --- | --- |
+| `pnpm install` | Install dependencies (`--frozen-lockfile` in CI) |
+| `pnpm build` | Bundle `src/` to `dist/index.cjs` with esbuild |
+| `pnpm test:unit` | Vitest unit tests |
+| `pnpm lint` | Biome lint |
+| `pnpm lint:md` | Prettier check on markdown |
+| `pnpm format` | Biome format + markdown format — **run before every commit** |
+| `pnpm format:md` | Prettier write on markdown |
+| `pnpm ts:check` | TypeScript check |
+| `pnpm check` | ts + lint + markdown check (what CI runs) |
+| `pnpm cloc:check` | Compare the pinned cloc release against upstream's latest |
 
 ## Gotchas
 

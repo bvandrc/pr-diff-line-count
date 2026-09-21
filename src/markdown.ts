@@ -124,9 +124,7 @@ export function renderMarkdown(
       ? row(
           `<strong>${CATEGORY_LABELS.source}</strong>`,
           tally.byCategory.source,
-          {
-            boldCode: true,
-          }
+          { boldCode: true }
         )
       : row(CATEGORY_LABELS[category], tally.byCategory[category])
   )

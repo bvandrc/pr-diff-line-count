@@ -49785,6 +49785,16 @@ function pick2(obj, keys) {
 var import_picomatch = __toESM(require_picomatch2(), 1);
 var NON_SOURCE_CATEGORIES = ["tests", "generated", "docs", "config"];
 var FILE_CATEGORIES = ["source", ...NON_SOURCE_CATEGORIES];
+var MACHINE_READ_TEXT_GLOBS = [
+  "**/requirements*.txt",
+  "**/requirements/**",
+  "**/constraints*.txt",
+  "**/runtime.txt",
+  "**/CMakeLists.txt",
+  "**/robots.txt",
+  "**/llms*.txt"
+];
+var excluding = (globs) => globs.map((glob) => `!${glob}`);
 var DEFAULT_CATEGORY_GLOBS = {
   tests: [
     "**/__tests__/**",
@@ -49837,15 +49847,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.rst",
     "**/*.adoc",
     "**/*.txt",
-    // The `.txt` files that are machine-read rather than prose. Each has a
-    // matching pattern under `config`, so excluding it here routes it there.
-    "!**/requirements*.txt",
-    "!**/requirements/**",
-    "!**/constraints*.txt",
-    "!**/runtime.txt",
-    "!**/CMakeLists.txt",
-    "!**/robots.txt",
-    "!**/llms*.txt",
+    ...excluding(MACHINE_READ_TEXT_GLOBS),
     "**/docs/**",
     "**/LICENSE*"
   ],
@@ -49858,13 +49860,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.cfg",
     "**/.editorconfig",
     "**/.python-version",
-    "**/requirements*.txt",
-    "**/requirements/**",
-    "**/constraints*.txt",
-    "**/runtime.txt",
-    "**/CMakeLists.txt",
-    "**/robots.txt",
-    "**/llms*.txt",
+    ...MACHINE_READ_TEXT_GLOBS,
     "**/setup.py",
     "**/Pipfile",
     "**/MANIFEST.in",

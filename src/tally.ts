@@ -40,6 +40,23 @@ export type DiffTally = {
 }
 
 /**
+ * Paths a machine reads that the broad `.txt` glob would otherwise hand to
+ * docs. `config` claims them and `docs` excludes them from this one list, so
+ * the two cannot drift into a file being both or neither.
+ */
+const MACHINE_READ_TEXT_GLOBS = [
+  '**/requirements*.txt',
+  '**/requirements/**',
+  '**/constraints*.txt',
+  '**/runtime.txt',
+  '**/CMakeLists.txt',
+  '**/robots.txt',
+  '**/llms*.txt',
+]
+
+const excluding = (globs: string[]) => globs.map((glob) => `!${glob}`)
+
+/**
  * The globs each category is decided by. Not configurable yet -- a workflow
  * gets these or nothing, which keeps the categories comparable across repos
  * until someone needs otherwise.
@@ -96,15 +113,7 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.rst',
     '**/*.adoc',
     '**/*.txt',
-    // The `.txt` files that are machine-read rather than prose. Each has a
-    // matching pattern under `config`, so excluding it here routes it there.
-    '!**/requirements*.txt',
-    '!**/requirements/**',
-    '!**/constraints*.txt',
-    '!**/runtime.txt',
-    '!**/CMakeLists.txt',
-    '!**/robots.txt',
-    '!**/llms*.txt',
+    ...excluding(MACHINE_READ_TEXT_GLOBS),
     '**/docs/**',
     '**/LICENSE*',
   ],
@@ -117,13 +126,7 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.cfg',
     '**/.editorconfig',
     '**/.python-version',
-    '**/requirements*.txt',
-    '**/requirements/**',
-    '**/constraints*.txt',
-    '**/runtime.txt',
-    '**/CMakeLists.txt',
-    '**/robots.txt',
-    '**/llms*.txt',
+    ...MACHINE_READ_TEXT_GLOBS,
     '**/setup.py',
     '**/Pipfile',
     '**/MANIFEST.in',

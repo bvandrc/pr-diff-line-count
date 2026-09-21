@@ -235,6 +235,9 @@ describe('the shipped patterns', () => {
     ['requirements/dev.txt', 'config'],
     ['runtime.txt', 'config'],
     ['CMakeLists.txt', 'config'],
+    ['public/robots.txt', 'config'],
+    ['public/llms.txt', 'config'],
+    ['public/llms-full.txt', 'config'],
     ['MANIFEST.in', 'config'],
   ])('classifies %s as %s', (file, expected) => {
     expect(categoryOf(file)).toBe(expected)

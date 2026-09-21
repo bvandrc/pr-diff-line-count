@@ -49845,6 +49845,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "!**/runtime.txt",
     "!**/CMakeLists.txt",
     "!**/robots.txt",
+    "!**/llms*.txt",
     "**/docs/**",
     "**/LICENSE*"
   ],
@@ -49863,6 +49864,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/runtime.txt",
     "**/CMakeLists.txt",
     "**/robots.txt",
+    "**/llms*.txt",
     "**/setup.py",
     "**/Pipfile",
     "**/MANIFEST.in",

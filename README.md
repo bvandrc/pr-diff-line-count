@@ -120,7 +120,7 @@ A category with no changes is left out of the table, and the `Total` row appears
 
 The categories are matched **in the order above** and the **first match wins** (i.e., a `.spec` file under a generated directory is still counted as a test). **source** is last because it is the fallback, which also means an unfamiliar language or an extensionless file is counted rather than quietly dropped.
 
-A glob prefixed with `!` **excludes** a path the rest of its category matched. `**/*.txt` is docs, but `requirements-dev.txt`, `constraints.txt`, `runtime.txt`, `CMakeLists.txt`, and `robots.txt` are machine-read rather than prose, so docs carries a `!` glob for each and config claims them instead. The exclusion beats every include in its own category — a `docs/robots.txt` is still not docs — and a path it drops falls through to the categories after it, or to source.
+A glob prefixed with `!` **excludes** a path the rest of its category matched. `**/*.txt` is docs, but `requirements-dev.txt`, `constraints.txt`, `runtime.txt`, `CMakeLists.txt`, `robots.txt`, and `llms.txt` are machine-read rather than prose, so docs carries a `!` glob for each and config claims them instead. The exclusion beats every include in its own category — a `docs/robots.txt` is still not docs — and a path it drops falls through to the categories after it, or to source.
 
 The patterns are **not configurable yet** — every repo gets the same list, which keeps the numbers comparable between them. They live in `DEFAULT_CATEGORY_GLOBS` in `src/tally.ts`. Making them overridable is [issue #5](https://github.com/bvandrc/pr-diff-line-count/issues/5).
 

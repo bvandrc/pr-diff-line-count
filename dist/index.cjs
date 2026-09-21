@@ -49875,6 +49875,12 @@ function tallyDiff(report, globs) {
 
 // src/utils/index.ts
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
+var bold = (content) => `<strong>${content}</strong>`;
+var italic = (content) => `<em>${content}</em>`;
+var attrsStr = (attrs) => Object.entries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
+var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
+var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
+var tr = (cells) => `<tr>${cells}</tr>`;
 
 // src/markdown.ts
 var CATEGORY_LABELS = {
@@ -49907,12 +49913,12 @@ var linesChangedStr = ({
 );
 var COLUMN_COUNT = 1 + sum(COLUMN_GROUPS.map(({ signs }) => signs.length));
 var row = (label, tally, { boldCode = false } = {}) => [
-  `<td>${label}</td>`,
+  td(label),
   ...[tally.added.code, tally.modified.code, tally.removed.code].map(
-    (count) => `<td align="right">${boldCode ? `<strong>${count}</strong>` : count}</td>`
+    (count) => td(boldCode ? bold(count) : count, { align: "right" })
   ),
   ...[tally.added.comment, tally.removed.comment].map(
-    (count) => `<td align="right">${count}</td>`
+    (count) => td(count, { align: "right" })
   )
 ].join("");
 function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
@@ -49927,25 +49933,38 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
     return lines.join("\n\n");
   }
   const rows = shown.map(
-    (category) => category === "source" ? row(
-      `<strong>${CATEGORY_LABELS.source}</strong>`,
-      tally.byCategory.source,
-      { boldCode: true }
-    ) : row(CATEGORY_LABELS[category], tally.byCategory[category])
+    (category) => category === "source" ? row(bold(CATEGORY_LABELS.source), tally.byCategory.source, {
+      boldCode: true
+    }) : row(CATEGORY_LABELS[category], tally.byCategory[category])
   );
-  if (shown.length > 1) rows.push(row("<strong>Total</strong>", tally.total));
+  if (shown.length > 1) rows.push(row(bold("Total"), tally.total));
   if (ghTotals)
     rows.push(
-      `<td colspan="${COLUMN_COUNT}" align="center"><em>${linesChangedStr({ label: "GitHub reports", added: ghTotals.additions, removed: ghTotals.deletions })}</em></td>`
+      td(
+        italic(
+          linesChangedStr({
+            label: "GitHub reports",
+            added: ghTotals.additions,
+            removed: ghTotals.deletions
+          })
+        ),
+        { colspan: COLUMN_COUNT, align: "center" }
+      )
     );
   lines.push(
     [
       "<table>",
       // label header row
-      `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join("")}</tr>`,
+      tr(
+        td("") + COLUMN_GROUPS.map(
+          ({ label, signs }) => th(label, { colspan: signs.length, align: "center" })
+        ).join("")
+      ),
       // sign header row
-      `<tr><td></td>${COLUMN_GROUPS.flatMap(({ signs }) => signs).map((sign) => `<th align="center">${sign}</th>`).join("")}</tr>`,
-      ...rows.map((cells) => `<tr>${cells}</tr>`),
+      tr(
+        td("") + COLUMN_GROUPS.flatMap(({ signs }) => signs).map((sign) => th(sign, { align: "center" })).join("")
+      ),
+      ...rows.map(tr),
       "</table>"
     ].join("\n"),
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.

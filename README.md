@@ -27,8 +27,7 @@ The comment, and the summary table with it:
 <tr><td><strong>Total</strong></td><td align="right">117</td><td align="right">68</td><td align="right">9</td><td align="right">110</td><td align="right">42</td></tr>
 </table>
 
-<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-Blank lines are excluded above: +34&nbsp;/&nbsp;−25.</sub>
+<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.<br>Blank lines are excluded above: +34&nbsp;/&nbsp;−25.</sub>
 
 </td></tr>
 </table>

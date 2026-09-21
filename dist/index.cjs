@@ -49914,11 +49914,11 @@ var linesChangedStr = ({
 var COLUMN_COUNT = 1 + sum(COLUMN_GROUPS.map(({ signs }) => signs.length));
 var row = (label, tally, { boldCode = false } = {}) => [
   td(label),
-  ...[tally.added.code, tally.modified.code, tally.removed.code].map(
-    (count) => td(boldCode ? bold(count) : count, { align: "right" })
+  ...[tally.added, tally.modified, tally.removed].map(
+    ({ code: count }) => td(boldCode ? bold(count) : count, { align: "right" })
   ),
-  ...[tally.added.comment, tally.removed.comment].map(
-    (count) => td(count, { align: "right" })
+  ...[tally.added, tally.removed].map(
+    ({ comment: count }) => td(count, { align: "right" })
   )
 ].join("");
 function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {

@@ -49733,6 +49733,18 @@ ${errors.join("\n")}`
   return clocDiffReportSchema.parse(JSON.parse(raw));
 }
 
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/partition.mjs
+function partition(arr, isInTruthy) {
+  const truthy = [];
+  const falsy = [];
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (isInTruthy(item, i, arr)) truthy.push(item);
+    else falsy.push(item);
+  }
+  return [truthy, falsy];
+}
+
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/zipObject.mjs
 function zipObject(keys, values) {
   const result = {};
@@ -49824,11 +49836,17 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.mdx",
     "**/*.rst",
     "**/*.adoc",
+    "**/*.txt",
+    // The `.txt` files that are machine-read rather than prose. Each has a
+    // matching pattern under `config`, so excluding it here routes it there.
+    "!**/requirements*.txt",
+    "!**/requirements/**",
+    "!**/constraints*.txt",
+    "!**/runtime.txt",
+    "!**/CMakeLists.txt",
+    "!**/robots.txt",
     "**/docs/**",
-    "**/LICENSE*",
-    "**/README*",
-    "**/CHANGELOG*",
-    "**/NOTICE*"
+    "**/LICENSE*"
   ],
   config: [
     "**/*.json",
@@ -49842,6 +49860,9 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/requirements*.txt",
     "**/requirements/**",
     "**/constraints*.txt",
+    "**/runtime.txt",
+    "**/CMakeLists.txt",
+    "**/robots.txt",
     "**/setup.py",
     "**/Pipfile",
     "**/MANIFEST.in",
@@ -49863,16 +49884,19 @@ var emptyTally = () => zipObject(
 var addInto = (target, source) => {
   for (const field of COUNT_FIELDS) target[field] += source[field];
 };
+var MATCH_OPTIONS = { dot: true };
+var categoryMatcher = (globs) => {
+  const [excluded, included] = partition(globs, (glob) => glob.startsWith("!"));
+  const isIncluded = (0, import_picomatch.default)(included, MATCH_OPTIONS);
+  const isExcluded = (0, import_picomatch.default)(
+    excluded.map((glob) => glob.slice(1)),
+    MATCH_OPTIONS
+  );
+  return (path5) => isIncluded(path5) && !isExcluded(path5);
+};
 function tallyDiff(report, globs) {
   const matchers = NON_SOURCE_CATEGORIES.map(
-    (category) => [
-      category,
-      (0, import_picomatch.default)(globs[category], {
-        // because plenty of real paths are under `.github/` or `.config/` and a
-        // glob that silently skips them would undercount without saying so.
-        dot: true
-      })
-    ]
+    (category) => [category, categoryMatcher(globs[category])]
   );
   const byCategory = zipObject(
     [...FILE_CATEGORIES],

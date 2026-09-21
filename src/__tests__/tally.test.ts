@@ -99,6 +99,39 @@ describe('tallyDiff', () => {
     expect(tally.byCategory.source.added.code).toBe(0)
   })
 
+  it('lets a `!` glob exclude a path the rest of its category matched', () => {
+    const tally = tallyDiff(
+      clocReport({
+        added: { 'notes.txt': { code: 6 }, 'requirements.txt': { code: 4 } },
+      }),
+      {
+        ...GLOBS,
+        docs: ['**/*.txt', '!**/requirements.txt'],
+        config: ['**/requirements.txt'],
+      }
+    )
+
+    expect(codePerCategory(tally)).toEqual({
+      source: 0,
+      tests: 0,
+      generated: 0,
+      docs: 6,
+      config: 4,
+    })
+  })
+
+  it('excludes against every include in the category, not just one', () => {
+    // `docs/robots.txt` matches `**/docs/**` too, and the `!` glob still wins.
+    const tally = tallyDiff(
+      clocReport({ added: { 'docs/robots.txt': { code: 1 } } }),
+      { ...GLOBS, docs: ['**/*.txt', '**/docs/**', '!**/robots.txt'] }
+    )
+
+    // Nothing else claims it, so it falls through to the source fallback.
+    expect(tally.byCategory.docs.added.code).toBe(0)
+    expect(tally.byCategory.source.added.code).toBe(1)
+  })
+
   it("ignores cloc's SUM and header siblings of the per-file entries", () => {
     const tally = tallyDiff(
       clocReport({
@@ -188,6 +221,7 @@ describe('the shipped patterns', () => {
     ['docs/architecture.adoc', 'docs'],
     ['LICENSE', 'docs'],
     ['CHANGELOG.rst', 'docs'],
+    ['NOTICE.txt', 'docs'],
     ['tsconfig.json', 'config'],
     ['.github/workflows/ci.yml', 'config'],
     ['Dockerfile', 'config'],
@@ -195,9 +229,12 @@ describe('the shipped patterns', () => {
     ['pyproject.toml', 'config'],
     ['setup.cfg', 'config'],
     ['setup.py', 'config'],
-    // `.txt` is not docs on its own, or every requirements file would be prose.
+    // `**/*.txt` is docs, minus the `!` globs for the ones that are settings.
     ['requirements.txt', 'config'],
+    ['requirements-dev.txt', 'config'],
     ['requirements/dev.txt', 'config'],
+    ['runtime.txt', 'config'],
+    ['CMakeLists.txt', 'config'],
     ['MANIFEST.in', 'config'],
   ])('classifies %s as %s', (file, expected) => {
     expect(categoryOf(file)).toBe(expected)

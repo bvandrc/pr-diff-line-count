@@ -12,7 +12,7 @@ Conventions live outside this file, synced from https://github.com/bvandrc/bvand
 
 `biome.jsonc` extends `conventions/biome.base.json`, so the lint and format rules are synced too rather than restated here. The only local addition is excluding the build output from checks.
 
-Biome does not format markdown, so **Prettier** owns `**/*.md` and nothing else — `.prettierignore` skips `dist/` and `conventions/` (the sync overwrites it, so formatting it here would only show up as a diff on the next sync). `proseWrap: "never"` enforces the no-hard-wrap rule rather than merely tolerating it — it unwraps a hard-wrapped paragraph instead of passing it. The cost is that Prettier then stops padding table cells, so markdown tables are unaligned in source and only line up rendered. Code fences are formatted too (the default), so a YAML example has to be a valid document at column zero: write a fragment under a `steps:` key rather than indenting it by hand, or Prettier dedents it and the snippet stops being pasteable.
+Biome does not format markdown, so **Prettier** owns `**/*.md` and nothing else. `proseWrap: "never"` enforces the no-hard-wrap rule rather than merely tolerating it — it unwraps a hard-wrapped paragraph instead of passing it. The cost is that Prettier then stops padding table cells, so markdown tables are unaligned in source and only line up rendered. Code fences are formatted too (the default), so a YAML example has to be a valid document at column zero: write a fragment under a `steps:` key rather than indenting it by hand, or Prettier dedents it and the snippet stops being pasteable.
 
 ## Commands
 

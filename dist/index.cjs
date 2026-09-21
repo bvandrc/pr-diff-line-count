@@ -49791,11 +49791,11 @@ var CONFIG_TXT_GLOBS = [
   "**/requirements/**",
   "**/constraints*.txt",
   "**/runtime.txt",
-  // C and C++
-  "**/CMakeLists.txt",
   // Web
   "**/robots.txt",
-  "**/llms*.txt"
+  "**/llms*.txt",
+  // C and C++
+  "**/CMakeLists.txt"
 ];
 var excluding = (globs) => globs.map((glob) => `!${glob}`);
 var DEFAULT_CATEGORY_GLOBS = {
@@ -49810,22 +49810,21 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.spec.*",
     "**/*_test.*",
     "**/*_spec.*",
-    // Java, Kotlin, and C#, where the suffix is capitalised
-    "**/*Test.*",
-    "**/*Tests.*",
     // Python
     "**/test_*.py",
-    "**/conftest.py"
+    "**/conftest.py",
+    // Java, Kotlin, and C#
+    "**/*Test.*",
+    "**/*Tests.*"
   ],
   generated: [
-    // Any language -- lockfiles. The four below are the ones whose names do
-    // not end in `.lock`, so the glob above cannot cover them.
+    // Any language -- lockfiles
     "**/*.lock",
     "**/package-lock.json",
     "**/pnpm-lock.yaml",
     "**/bun.lockb",
     "**/go.sum",
-    // Any language -- build output, vendored code, and anything that says so
+    // Any language -- build output, vendored code, etc.
     "**/dist/**",
     "**/build/**",
     "**/vendor/**",
@@ -49835,8 +49834,6 @@ var DEFAULT_CATEGORY_GLOBS = {
     // Web
     "**/*.min.js",
     "**/*.min.css",
-    // Go
-    "**/*.pb.go",
     // Python
     "**/*_pb2.py",
     "**/*_pb2.pyi",
@@ -49845,7 +49842,9 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/__pycache__/**",
     // Dart
     "**/*.g.dart",
-    "**/*.freezed.dart"
+    "**/*.freezed.dart",
+    // Go
+    "**/*.pb.go"
   ],
   docs: [
     // Any language
@@ -49859,19 +49858,19 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/LICENSE*"
   ],
   config: [
-    // Any language -- the data formats settings are written in
+    // Any language
     "**/*.json",
     "**/*.yml",
     "**/*.yaml",
     "**/*.toml",
     "**/*.ini",
     "**/*.cfg",
+    ...CONFIG_TXT_GLOBS,
+    // The `.txt` settings docs hands over (grouped by language above)
     // Any language -- editor, CI, and container tooling
     "**/.editorconfig",
     "**/.github/**",
     "**/Dockerfile*",
-    // The `.txt` settings docs hands over, grouped by language above
-    ...CONFIG_TXT_GLOBS,
     // Python
     "**/.python-version",
     "**/setup.py",

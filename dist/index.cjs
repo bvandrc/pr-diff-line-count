@@ -49905,9 +49905,10 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   );
   if (shown.length > 1) rows.push(row("<strong>Total</strong>", tally.total));
   const source = tally.byCategory.source;
+  const srcCodeHeaderStr = `**${unbreakable(`Source code: +${source.added.code} / ~${source.modified.code} / \u2212${source.removed.code}`)}**`;
   const ghTotalsStr = ghTotals ? ` ${unbreakable(" \xB7 ")} ${unbreakable(`GitHub reports +${ghTotals.additions} / \u2212${ghTotals.deletions}`)}` : "";
   lines.push(
-    `**${unbreakable(`Source code: +${source.added.code} / ~${source.modified.code} / \u2212${source.removed.code}`)}**${ghTotalsStr}`,
+    `${srcCodeHeaderStr}${ghTotalsStr}`,
     [
       "<table>",
       `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join("")}</tr>`,

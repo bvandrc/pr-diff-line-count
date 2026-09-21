@@ -93,12 +93,13 @@ export function renderMarkdown(
   if (shown.length > 1) rows.push(row('<strong>Total</strong>', tally.total))
 
   const source = tally.byCategory.source
+  const srcCodeHeaderStr = `**${unbreakable(`Source code: +${source.added.code} / ~${source.modified.code} / −${source.removed.code}`)}**`
   const ghTotalsStr = ghTotals
     ? ` ${unbreakable(' · ')} ${unbreakable(`GitHub reports +${ghTotals.additions} / −${ghTotals.deletions}`)}`
     : ''
 
   lines.push(
-    `**${unbreakable(`Source code: +${source.added.code} / ~${source.modified.code} / −${source.removed.code}`)}**${ghTotalsStr}`,
+    `${srcCodeHeaderStr}${ghTotalsStr}`,
     [
       '<table>',
       `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join('')}</tr>`,

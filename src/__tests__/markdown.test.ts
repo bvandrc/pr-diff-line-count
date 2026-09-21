@@ -54,7 +54,9 @@ describe('renderMarkdown', () => {
       '108',
       '42',
     ])
-    expect(markdown).toContain('Blank lines are excluded above: +13 / −3.')
+    expect(markdown).toContain(
+      'Blank lines are excluded above: +13&nbsp;/&nbsp;−3.'
+    )
     expect(markdown).not.toContain('Generated')
   })
 

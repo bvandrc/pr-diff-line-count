@@ -28,7 +28,7 @@ The comment, and the summary table with it:
 </table>
 
 <sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-Blank lines are excluded above: +34 / −25.</sub>
+Blank lines are excluded above: +34&nbsp;/&nbsp;−25.</sub>
 
 </td></tr>
 </table>

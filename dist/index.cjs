@@ -49913,12 +49913,13 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
       "<table>",
       // label header row
       `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join("")}</tr>`,
+      // sign header row
       `<tr><td></td>${COLUMN_GROUPS.flatMap(({ signs }) => signs).map((sign) => `<th align="center">${sign}</th>`).join("")}</tr>`,
       ...rows.map((cells) => `<tr>${cells}</tr>`),
       "</table>"
     ].join("\n"),
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-Blank lines are excluded above: +${tally.total.added.blank} / \u2212${tally.total.removed.blank}.</sub>`
+Blank lines are excluded above: ${unbreakable(`+${tally.total.added.blank} / \u2212${tally.total.removed.blank}.`)}</sub>`
   );
   return lines.join("\n\n");
 }

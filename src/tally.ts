@@ -45,13 +45,16 @@ export type DiffTally = {
  * this one list, so the two cannot drift into a file being both or neither.
  */
 const CONFIG_TXT_GLOBS = [
+  // Python
   '**/requirements*.txt',
   '**/requirements/**',
   '**/constraints*.txt',
   '**/runtime.txt',
-  '**/CMakeLists.txt',
+  // Web
   '**/robots.txt',
   '**/llms*.txt',
+  // C and C++
+  '**/CMakeLists.txt',
 ]
 
 const excluding = (globs: string[]) => globs.map((glob) => `!${glob}`)
@@ -63,6 +66,7 @@ const excluding = (globs: string[]) => globs.map((glob) => `!${glob}`)
  */
 export const DEFAULT_CATEGORY_GLOBS = {
   tests: [
+    // Any language
     '**/__tests__/**',
     '**/__mocks__/**',
     '**/test/**',
@@ -72,36 +76,44 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.spec.*',
     '**/*_test.*',
     '**/*_spec.*',
-    '**/*Test.*',
-    '**/*Tests.*',
+    // Python
     '**/test_*.py',
     '**/conftest.py',
+    // Java, Kotlin, and C#
+    '**/*Test.*',
+    '**/*Tests.*',
   ],
   generated: [
+    // Any language -- lockfiles
     '**/*.lock',
-    // The lockfiles whose names don't end in `.lock`.
     '**/package-lock.json',
     '**/pnpm-lock.yaml',
     '**/bun.lockb',
     '**/go.sum',
+    // Any language -- build output, vendored code, etc.
     '**/dist/**',
     '**/build/**',
     '**/vendor/**',
     '**/migrations/**',
     '**/__snapshots__/**',
+    '**/*.generated.*',
+    // Web
     '**/*.min.js',
     '**/*.min.css',
-    '**/*.generated.*',
-    '**/*.pb.go',
+    // Python
     '**/*_pb2.py',
     '**/*_pb2.pyi',
     '**/*_pb2_grpc.py',
     '**/*.egg-info/**',
     '**/__pycache__/**',
+    // Dart
     '**/*.g.dart',
     '**/*.freezed.dart',
+    // Go
+    '**/*.pb.go',
   ],
   docs: [
+    // Any language
     '**/*.md',
     '**/*.mdx',
     '**/*.rst',
@@ -112,20 +124,24 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/LICENSE*',
   ],
   config: [
+    // Any language
     '**/*.json',
     '**/*.yml',
     '**/*.yaml',
     '**/*.toml',
     '**/*.ini',
     '**/*.cfg',
+    ...CONFIG_TXT_GLOBS, // The `.txt` settings docs hands over (grouped by language above)
+    // Any language -- editor, CI, and container tooling
     '**/.editorconfig',
+    '**/.github/**',
+    '**/Dockerfile*',
+    // Python
     '**/.python-version',
-    ...CONFIG_TXT_GLOBS,
     '**/setup.py',
     '**/Pipfile',
     '**/MANIFEST.in',
-    '**/.github/**',
-    '**/Dockerfile*',
+    // Terraform
     '**/*.tfvars',
   ],
 } as const satisfies CategoryGlobs

@@ -49812,17 +49812,11 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/conftest.py"
   ],
   generated: [
+    "**/*.lock",
+    // The lockfiles whose names don't end in `.lock`.
     "**/package-lock.json",
-    "**/yarn.lock",
     "**/pnpm-lock.yaml",
     "**/bun.lockb",
-    "**/Cargo.lock",
-    "**/poetry.lock",
-    "**/Pipfile.lock",
-    "**/uv.lock",
-    "**/pdm.lock",
-    "**/Gemfile.lock",
-    "**/composer.lock",
     "**/go.sum",
     "**/dist/**",
     "**/build/**",

@@ -211,10 +211,13 @@ describe('the shipped patterns', () => {
     // and generated is matched before config.
     ['package-lock.json', 'generated'],
     ['go.sum', 'generated'],
+    // `**/*.lock` covers these and whatever lockfile a tool names next.
+    ['Cargo.lock', 'generated'],
+    ['poetry.lock', 'generated'],
+    ['flake.lock', 'generated'],
     ['migrations/0007_add_task_schedule.sql', 'generated'],
     ['api/service.pb.go', 'generated'],
     ['public/app.min.js', 'generated'],
-    ['uv.lock', 'generated'],
     ['api/rpc/service_pb2.pyi', 'generated'],
     ['src/thing.egg-info/PKG-INFO', 'generated'],
     ['README.md', 'docs'],

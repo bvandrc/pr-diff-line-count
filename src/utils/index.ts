@@ -1,5 +1,5 @@
 /**
- * @fileoverview Text helpers with no ties to this action.
+ * @fileoverview Helpers with no ties to this action.
  */
 
 /** Keeps a phrase on one line, whatever the comment's width. */

@@ -6,7 +6,7 @@ import type { ClocDiffReport } from '../cloc/run.ts'
 import type { GithubDiffTotals } from '../markdown.ts'
 import { renderMarkdown } from '../markdown.ts'
 import { type CategoryGlobs, tallyDiff } from '../tally.ts'
-import { unbreakable } from '../utils/text-utils.ts'
+import { unbreakable } from '../utils'
 
 /** Builds the `--by-file` shape from just the entries a case cares about. */
 const clocReport = (sections: PartialDeep<ClocDiffReport>): ClocDiffReport =>

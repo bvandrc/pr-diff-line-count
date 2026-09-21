@@ -13,7 +13,7 @@ import {
   FILE_CATEGORIES,
   type FileCategory,
 } from './tally.ts'
-import { unbreakable } from './utils/text-utils.ts'
+import { unbreakable } from './utils'
 
 const CATEGORY_LABELS = {
   source: 'Source',

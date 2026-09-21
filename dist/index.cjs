@@ -49873,7 +49873,7 @@ function tallyDiff(report, globs) {
   return { byCategory, total };
 }
 
-// src/utils/text-utils.ts
+// src/utils/index.ts
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 
 // src/markdown.ts

@@ -84,10 +84,10 @@ const row = (
 ) =>
   [
     td(label),
-    ...[tally.added.code, tally.modified.code, tally.removed.code].map(
-      (count) => td(boldCode ? bold(count) : count, { align: 'right' })
+    ...[tally.added, tally.modified, tally.removed].map(
+      (({code: count})) => td(boldCode ? bold(count) : count, { align: 'right' })
     ),
-    ...[tally.added.comment, tally.removed.comment].map((count) =>
+    ...[tally.added, tally.removed].map((({comment: count})) =>
       td(count, { align: 'right' })
     ),
   ].join('')

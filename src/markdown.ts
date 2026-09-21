@@ -52,7 +52,6 @@ const unbreakable = (text: string) => text.replaceAll(' ', '&nbsp;')
 const row = (label: string, tally: CategoryTally) =>
   [
     `<td>${label}</td>`,
-    // Counts read as columns of digits; only the labels want the left edge.
     ...[
       tally.added.code,
       tally.modified.code,
@@ -95,7 +94,7 @@ export function renderMarkdown(
 
   const source = tally.byCategory.source
   const ghTotalsStr = ghTotals
-    ? ` &nbsp;·&nbsp; ${unbreakable(`GitHub reports +${ghTotals.additions} / −${ghTotals.deletions}`)}`
+    ? ` ${unbreakable(' · ')} ${unbreakable(`GitHub reports +${ghTotals.additions} / −${ghTotals.deletions}`)}`
     : ''
 
   lines.push(
@@ -104,15 +103,12 @@ export function renderMarkdown(
       '<table>',
       `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join('')}</tr>`,
       `<tr><td></td>${COLUMN_GROUPS.flatMap(({ signs }) => signs)
-        .map((sign) => `<th align="right">${sign}</th>`)
+        .map((sign) => `<th align="center">${sign}</th>`)
         .join('')}</tr>`,
       ...rows.map((cells) => `<tr>${cells}</tr>`),
       '</table>',
     ].join('\n'),
-    [
-      `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>`,
-      `<sub>Blank lines are excluded above: +${tally.total.added.blank} / −${tally.total.removed.blank}.</sub>`,
-    ].join('\n')
+    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\nBlank lines are excluded above: +${tally.total.added.blank} / −${tally.total.removed.blank}.</sub>`
   )
 
   return lines.join('\n\n')

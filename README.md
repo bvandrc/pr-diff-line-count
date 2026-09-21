@@ -19,7 +19,7 @@ The comment, and the summary table with it:
 
 <table>
 <tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
-<tr><td></td><th align="right">+</th><th align="right">~</th><th align="right">−</th><th align="right">+</th><th align="right">−</th></tr>
+<tr><td></td><th align="center">+</th><th align="center">~</th><th align="center">−</th><th align="center">+</th><th align="center">−</th></tr>
 <tr><td>Source</td><td align="right">91</td><td align="right">68</td><td align="right">9</td><td align="right">106</td><td align="right">42</td></tr>
 <tr><td>Tests</td><td align="right">12</td><td align="right">0</td><td align="right">0</td><td align="right">4</td><td align="right">0</td></tr>
 <tr><td>Docs</td><td align="right">6</td><td align="right">0</td><td align="right">0</td><td align="right">0</td><td align="right">0</td></tr>
@@ -27,8 +27,8 @@ The comment, and the summary table with it:
 <tr><td><strong>Total</strong></td><td align="right">117</td><td align="right">68</td><td align="right">9</td><td align="right">110</td><td align="right">42</td></tr>
 </table>
 
-<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>
-<sub>Blank lines are excluded above: +34 / −25.</sub>
+<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
+Blank lines are excluded above: +34 / −25.</sub>
 
 </td></tr>
 </table>

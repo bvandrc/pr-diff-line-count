@@ -75,16 +75,24 @@ const linesChangedStr = ({
       .join(' / ')}`
   )
 
-const row = (label: string, tally: CategoryTally) =>
+/** Every column the table has: the label, plus one per sign. */
+const COLUMN_COUNT = 1 + sum(COLUMN_GROUPS.map(({ signs }) => signs.length))
+
+/** The source row carries the headline counts, so its code cells are bold. */
+const row = (
+  label: string,
+  tally: CategoryTally,
+  { boldCode = false }: { boldCode?: boolean } = {}
+) =>
   [
     `<td>${label}</td>`,
-    ...[
-      tally.added.code,
-      tally.modified.code,
-      tally.removed.code,
-      tally.added.comment,
-      tally.removed.comment,
-    ].map((count) => `<td align="right">${count}</td>`),
+    ...[tally.added.code, tally.modified.code, tally.removed.code].map(
+      (count) =>
+        `<td align="right">${boldCode ? `<strong>${count}</strong>` : count}</td>`
+    ),
+    ...[tally.added.comment, tally.removed.comment].map(
+      (count) => `<td align="right">${count}</td>`
+    ),
   ].join('')
 
 /**
@@ -114,18 +122,24 @@ export function renderMarkdown(
   }
 
   const rows = shown.map((category) =>
-    row(CATEGORY_LABELS[category], tally.byCategory[category])
+    category === 'source'
+      ? row(
+          `<strong>${CATEGORY_LABELS.source}</strong>`,
+          tally.byCategory.source,
+          {
+            boldCode: true,
+          }
+        )
+      : row(CATEGORY_LABELS[category], tally.byCategory[category])
   )
   if (shown.length > 1) rows.push(row('<strong>Total</strong>', tally.total))
-
-  const source = tally.byCategory.source
-  const srcCodeHeaderStr = `**${linesChangedStr({ label: 'Source code:', ...mapValues(source, ({ code }) => code) })}**`
-  const ghTotalsStr = ghTotals
-    ? ` ${unbreakable(' · ')} ${linesChangedStr({ label: 'GitHub reports', added: ghTotals.additions, removed: ghTotals.deletions })}`
-    : ''
+  // GitHub's own count of the same diff, spanning the table under our rows.
+  if (ghTotals)
+    rows.push(
+      `<td colspan="${COLUMN_COUNT}" align="center"><em>${linesChangedStr({ label: 'GitHub reports', added: ghTotals.additions, removed: ghTotals.deletions })}</em></td>`
+    )
 
   lines.push(
-    `${srcCodeHeaderStr}${ghTotalsStr}`,
     [
       '<table>',
       // label header row

@@ -49903,15 +49903,15 @@ var linesChangedStr = ({
     `\u2212${removed}`
   ].filter(Boolean).join(" / ")}`
 );
-var row = (label, tally) => [
+var COLUMN_COUNT = 1 + sum(COLUMN_GROUPS.map(({ signs }) => signs.length));
+var row = (label, tally, { boldCode = false } = {}) => [
   `<td>${label}</td>`,
-  ...[
-    tally.added.code,
-    tally.modified.code,
-    tally.removed.code,
-    tally.added.comment,
-    tally.removed.comment
-  ].map((count) => `<td align="right">${count}</td>`)
+  ...[tally.added.code, tally.modified.code, tally.removed.code].map(
+    (count) => `<td align="right">${boldCode ? `<strong>${count}</strong>` : count}</td>`
+  ),
+  ...[tally.added.comment, tally.removed.comment].map(
+    (count) => `<td align="right">${count}</td>`
+  )
 ].join("");
 function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   const lines = ["### PR Diff Line Count"];
@@ -49925,14 +49925,20 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
     return lines.join("\n\n");
   }
   const rows = shown.map(
-    (category) => row(CATEGORY_LABELS[category], tally.byCategory[category])
+    (category) => category === "source" ? row(
+      `<strong>${CATEGORY_LABELS.source}</strong>`,
+      tally.byCategory.source,
+      {
+        boldCode: true
+      }
+    ) : row(CATEGORY_LABELS[category], tally.byCategory[category])
   );
   if (shown.length > 1) rows.push(row("<strong>Total</strong>", tally.total));
-  const source = tally.byCategory.source;
-  const srcCodeHeaderStr = `**${linesChangedStr({ label: "Source code:", ...mapValues(source, ({ code }) => code) })}**`;
-  const ghTotalsStr = ghTotals ? ` ${unbreakable(" \xB7 ")} ${linesChangedStr({ label: "GitHub reports", added: ghTotals.additions, removed: ghTotals.deletions })}` : "";
+  if (ghTotals)
+    rows.push(
+      `<td colspan="${COLUMN_COUNT}" align="center"><em>${linesChangedStr({ label: "GitHub reports", added: ghTotals.additions, removed: ghTotals.deletions })}</em></td>`
+    );
   lines.push(
-    `${srcCodeHeaderStr}${ghTotalsStr}`,
     [
       "<table>",
       // label header row

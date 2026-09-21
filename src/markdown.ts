@@ -102,6 +102,7 @@ export function renderMarkdown(
     `${srcCodeHeaderStr}${ghTotalsStr}`,
     [
       '<table>',
+      // label header row
       `<tr><td></td>${COLUMN_GROUPS.map(({ label, signs }) => `<th colspan="${signs.length}" align="center">${label}</th>`).join('')}</tr>`,
       `<tr><td></td>${COLUMN_GROUPS.flatMap(({ signs }) => signs)
         .map((sign) => `<th align="center">${sign}</th>`)

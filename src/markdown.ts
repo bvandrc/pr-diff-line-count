@@ -50,22 +50,29 @@ const hasAnyLine = (tally: CategoryTally) =>
 const unbreakable = (text: string) => text.replaceAll(' ', '&nbsp;')
 
 /**
- * One phrase of counts — `+1 / ~3 / −0` — kept whole. `modified` is left out
- * for the sources that have no such count, like GitHub's own totals.
+ * One labelled phrase of counts — `Source code: +1 / ~3 / −0` — kept whole.
+ * `modified` is left out for the sources that have no such count, like
+ * GitHub's own totals.
  */
 const linesChangedStr = ({
+  label,
   added,
   modified,
   removed,
 }: {
+  label: string
   added: number
   modified?: number
   removed: number
 }) =>
   unbreakable(
-    [`+${added}`, modified === undefined ? '' : `~${modified}`, `−${removed}`]
+    `${label} ${[
+      `+${added}`,
+      modified === undefined ? '' : `~${modified}`,
+      `−${removed}`,
+    ]
       .filter(Boolean)
-      .join(' / ')
+      .join(' / ')}`
   )
 
 const row = (label: string, tally: CategoryTally) =>
@@ -112,9 +119,9 @@ export function renderMarkdown(
   if (shown.length > 1) rows.push(row('<strong>Total</strong>', tally.total))
 
   const source = tally.byCategory.source
-  const srcCodeHeaderStr = `**${unbreakable(`Source code: ${linesChangedStr({ added: source.added.code, modified: source.modified.code, removed: source.removed.code })}`)}**`
+  const srcCodeHeaderStr = `**${linesChangedStr({ label: 'Source code:', added: source.added.code, modified: source.modified.code, removed: source.removed.code })}**`
   const ghTotalsStr = ghTotals
-    ? ` ${unbreakable(' · ')} ${unbreakable(`GitHub reports ${linesChangedStr({ added: ghTotals.additions, removed: ghTotals.deletions })}`)}`
+    ? ` ${unbreakable(' · ')} ${linesChangedStr({ label: 'GitHub reports', added: ghTotals.additions, removed: ghTotals.deletions })}`
     : ''
 
   lines.push(
@@ -130,7 +137,7 @@ export function renderMarkdown(
       ...rows.map((cells) => `<tr>${cells}</tr>`),
       '</table>',
     ].join('\n'),
-    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\nBlank lines are excluded above: ${linesChangedStr({ added: tally.total.added.blank, removed: tally.total.removed.blank })}.</sub>`
+    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\n${linesChangedStr({ label: 'Blank lines are excluded above:', added: tally.total.added.blank, removed: tally.total.removed.blank })}.</sub>`
   )
 
   return lines.join('\n\n')

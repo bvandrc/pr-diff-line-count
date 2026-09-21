@@ -49880,11 +49880,16 @@ var githubDiffTotalsSchema = external_exports.object({
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 var linesChangedStr = ({
+  label,
   added,
   modified,
   removed
 }) => unbreakable(
-  [`+${added}`, modified === void 0 ? "" : `~${modified}`, `\u2212${removed}`].filter(Boolean).join(" / ")
+  `${label} ${[
+    `+${added}`,
+    modified === void 0 ? "" : `~${modified}`,
+    `\u2212${removed}`
+  ].filter(Boolean).join(" / ")}`
 );
 var row = (label, tally) => [
   `<td>${label}</td>`,
@@ -49912,8 +49917,8 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   );
   if (shown.length > 1) rows.push(row("<strong>Total</strong>", tally.total));
   const source = tally.byCategory.source;
-  const srcCodeHeaderStr = `**${unbreakable(`Source code: ${linesChangedStr({ added: source.added.code, modified: source.modified.code, removed: source.removed.code })}`)}**`;
-  const ghTotalsStr = ghTotals ? ` ${unbreakable(" \xB7 ")} ${unbreakable(`GitHub reports ${linesChangedStr({ added: ghTotals.additions, removed: ghTotals.deletions })}`)}` : "";
+  const srcCodeHeaderStr = `**${linesChangedStr({ label: "Source code:", added: source.added.code, modified: source.modified.code, removed: source.removed.code })}**`;
+  const ghTotalsStr = ghTotals ? ` ${unbreakable(" \xB7 ")} ${linesChangedStr({ label: "GitHub reports", added: ghTotals.additions, removed: ghTotals.deletions })}` : "";
   lines.push(
     `${srcCodeHeaderStr}${ghTotalsStr}`,
     [
@@ -49926,7 +49931,7 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
       "</table>"
     ].join("\n"),
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-Blank lines are excluded above: ${linesChangedStr({ added: tally.total.added.blank, removed: tally.total.removed.blank })}.</sub>`
+${linesChangedStr({ label: "Blank lines are excluded above:", added: tally.total.added.blank, removed: tally.total.removed.blank })}.</sub>`
   );
   return lines.join("\n\n");
 }

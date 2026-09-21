@@ -49873,6 +49873,9 @@ function tallyDiff(report, globs) {
   return { byCategory, total };
 }
 
+// src/utils/text-utils.ts
+var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
+
 // src/markdown.ts
 var CATEGORY_LABELS = {
   source: "Source",
@@ -49890,7 +49893,6 @@ var githubDiffTotalsSchema = external_exports.object({
   deletions: external_exports.number()
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
-var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 var linesChangedStr = ({
   label,
   added,

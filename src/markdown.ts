@@ -13,6 +13,7 @@ import {
   FILE_CATEGORIES,
   type FileCategory,
 } from './tally.ts'
+import { unbreakable } from './utils/text-utils.ts'
 
 const CATEGORY_LABELS = {
   source: 'Source',
@@ -45,9 +46,6 @@ export type GithubDiffTotals = z.infer<typeof githubDiffTotalsSchema>
 /** Whether a category earned a row: any count, of any kind, above zero. */
 const hasAnyLine = (tally: CategoryTally) =>
   sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0
-
-/** Keeps a phrase on one line, whatever the comment's width. */
-const unbreakable = (text: string) => text.replaceAll(' ', '&nbsp;')
 
 /**
  * One labelled phrase of counts — `Source code: +1 / ~3 / −0` — kept whole.

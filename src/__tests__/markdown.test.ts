@@ -6,6 +6,7 @@ import type { ClocDiffReport } from '../cloc/run.ts'
 import type { GithubDiffTotals } from '../markdown.ts'
 import { renderMarkdown } from '../markdown.ts'
 import { type CategoryGlobs, tallyDiff } from '../tally.ts'
+import { unbreakable } from '../utils/text-utils.ts'
 
 /** Builds the `--by-file` shape from just the entries a case cares about. */
 const clocReport = (sections: PartialDeep<ClocDiffReport>): ClocDiffReport =>
@@ -58,7 +59,7 @@ describe('renderMarkdown', () => {
     expect(rowCells(markdown, 'Tests')).toEqual(['7', '0', '0', '2', '0'])
     expect(rowCells(markdown, 'Total')).toEqual(['98', '0', '9', '108', '42'])
     expect(markdown).toContain(
-      'Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above:&nbsp;+13&nbsp;/&nbsp;−3.'
+      unbreakable('Blank lines are excluded above: +13 / −3.')
     )
     expect(markdown).not.toContain('Generated')
   })
@@ -92,8 +93,7 @@ describe('renderMarkdown', () => {
       { githubTotals: { additions: 329, deletions: 144 } }
     )
 
-    const ghRow =
-      '<tr><td colspan="6" align="center"><em>GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144</em></td></tr>'
+    const ghRow = `<tr><td colspan="6" align="center"><em>${unbreakable('GitHub reports +329 / −144')}</em></td></tr>`
     expect(markdown).toContain(ghRow)
     // Below the total, and still inside the table.
     expect(markdown.indexOf(ghRow)).toBeGreaterThan(
@@ -105,7 +105,7 @@ describe('renderMarkdown', () => {
   it('leaves the totals row out when GitHub reports nothing', () => {
     const markdown = render(clocReport({ added: { 'src/a.ts': { code: 5 } } }))
 
-    expect(markdown).not.toContain('GitHub&nbsp;reports')
+    expect(markdown).not.toContain(unbreakable('GitHub reports'))
   })
 
   it('reports an empty diff as no counted changes', () => {

@@ -49733,6 +49733,18 @@ ${errors.join("\n")}`
   return clocDiffReportSchema.parse(JSON.parse(raw));
 }
 
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/partition.mjs
+function partition(arr, isInTruthy) {
+  const truthy = [];
+  const falsy = [];
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (isInTruthy(item, i, arr)) truthy.push(item);
+    else falsy.push(item);
+  }
+  return [truthy, falsy];
+}
+
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/zipObject.mjs
 function zipObject(keys, values) {
   const result = {};
@@ -49773,6 +49785,16 @@ function pick2(obj, keys) {
 var import_picomatch = __toESM(require_picomatch2(), 1);
 var NON_SOURCE_CATEGORIES = ["tests", "generated", "docs", "config"];
 var FILE_CATEGORIES = ["source", ...NON_SOURCE_CATEGORIES];
+var CONFIG_TXT_GLOBS = [
+  "**/requirements*.txt",
+  "**/requirements/**",
+  "**/constraints*.txt",
+  "**/runtime.txt",
+  "**/CMakeLists.txt",
+  "**/robots.txt",
+  "**/llms*.txt"
+];
+var excluding = (globs) => globs.map((glob) => `!${glob}`);
 var DEFAULT_CATEGORY_GLOBS = {
   tests: [
     "**/__tests__/**",
@@ -49786,17 +49808,15 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*_spec.*",
     "**/*Test.*",
     "**/*Tests.*",
+    "**/test_*.py",
     "**/conftest.py"
   ],
   generated: [
+    "**/*.lock",
+    // The lockfiles whose names don't end in `.lock`.
     "**/package-lock.json",
-    "**/yarn.lock",
     "**/pnpm-lock.yaml",
     "**/bun.lockb",
-    "**/Cargo.lock",
-    "**/poetry.lock",
-    "**/Gemfile.lock",
-    "**/composer.lock",
     "**/go.sum",
     "**/dist/**",
     "**/build/**",
@@ -49808,6 +49828,10 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.generated.*",
     "**/*.pb.go",
     "**/*_pb2.py",
+    "**/*_pb2.pyi",
+    "**/*_pb2_grpc.py",
+    "**/*.egg-info/**",
+    "**/__pycache__/**",
     "**/*.g.dart",
     "**/*.freezed.dart"
   ],
@@ -49817,6 +49841,7 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.rst",
     "**/*.adoc",
     "**/*.txt",
+    ...excluding(CONFIG_TXT_GLOBS),
     "**/docs/**",
     "**/LICENSE*"
   ],
@@ -49828,6 +49853,11 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.ini",
     "**/*.cfg",
     "**/.editorconfig",
+    "**/.python-version",
+    ...CONFIG_TXT_GLOBS,
+    "**/setup.py",
+    "**/Pipfile",
+    "**/MANIFEST.in",
     "**/.github/**",
     "**/Dockerfile*",
     "**/*.tfvars"
@@ -49846,16 +49876,19 @@ var emptyTally = () => zipObject(
 var addInto = (target, source) => {
   for (const field of COUNT_FIELDS) target[field] += source[field];
 };
+var MATCH_OPTIONS = { dot: true };
+var categoryMatcher = (globs) => {
+  const [excluded, included] = partition(globs, (glob) => glob.startsWith("!"));
+  const isIncluded = (0, import_picomatch.default)(included, MATCH_OPTIONS);
+  const isExcluded = (0, import_picomatch.default)(
+    excluded.map((glob) => glob.slice(1)),
+    MATCH_OPTIONS
+  );
+  return (path5) => isIncluded(path5) && !isExcluded(path5);
+};
 function tallyDiff(report, globs) {
   const matchers = NON_SOURCE_CATEGORIES.map(
-    (category) => [
-      category,
-      (0, import_picomatch.default)(globs[category], {
-        // because plenty of real paths are under `.github/` or `.config/` and a
-        // glob that silently skips them would undercount without saying so.
-        dot: true
-      })
-    ]
+    (category) => [category, categoryMatcher(globs[category])]
   );
   const byCategory = zipObject(
     [...FILE_CATEGORIES],

@@ -6,7 +6,7 @@
  * config.
  */
 
-import { zipObject } from 'es-toolkit'
+import { partition, zipObject } from 'es-toolkit'
 import picomatch from 'picomatch'
 
 import {
@@ -21,7 +21,11 @@ const NON_SOURCE_CATEGORIES = ['tests', 'generated', 'docs', 'config'] as const
 export const FILE_CATEGORIES = ['source', ...NON_SOURCE_CATEGORIES] as const
 export type FileCategory = (typeof FILE_CATEGORIES)[number]
 
-/** Globs deciding what is what. Anything matching none of them counts as source. */
+/**
+ * Globs deciding what is what. Anything matching none of them counts as source.
+ * A `!`-prefixed glob excludes a path the rest of its category matched, which
+ * is how a broad extension keeps the exceptions that are not really that kind.
+ */
 export type CategoryGlobs = Record<
   (typeof NON_SOURCE_CATEGORIES)[number],
   string[]
@@ -34,6 +38,23 @@ export type DiffTally = {
   byCategory: Record<FileCategory, CategoryTally>
   total: CategoryTally
 }
+
+/**
+ * The `.txt` paths a machine reads, which the broad `.txt` glob would
+ * otherwise hand to docs. `config` claims them and `docs` excludes them from
+ * this one list, so the two cannot drift into a file being both or neither.
+ */
+const CONFIG_TXT_GLOBS = [
+  '**/requirements*.txt',
+  '**/requirements/**',
+  '**/constraints*.txt',
+  '**/runtime.txt',
+  '**/CMakeLists.txt',
+  '**/robots.txt',
+  '**/llms*.txt',
+]
+
+const excluding = (globs: string[]) => globs.map((glob) => `!${glob}`)
 
 /**
  * The globs each category is decided by. Not configurable yet -- a workflow
@@ -53,17 +74,15 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*_spec.*',
     '**/*Test.*',
     '**/*Tests.*',
+    '**/test_*.py',
     '**/conftest.py',
   ],
   generated: [
+    '**/*.lock',
+    // The lockfiles whose names don't end in `.lock`.
     '**/package-lock.json',
-    '**/yarn.lock',
     '**/pnpm-lock.yaml',
     '**/bun.lockb',
-    '**/Cargo.lock',
-    '**/poetry.lock',
-    '**/Gemfile.lock',
-    '**/composer.lock',
     '**/go.sum',
     '**/dist/**',
     '**/build/**',
@@ -75,6 +94,10 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.generated.*',
     '**/*.pb.go',
     '**/*_pb2.py',
+    '**/*_pb2.pyi',
+    '**/*_pb2_grpc.py',
+    '**/*.egg-info/**',
+    '**/__pycache__/**',
     '**/*.g.dart',
     '**/*.freezed.dart',
   ],
@@ -84,6 +107,7 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.rst',
     '**/*.adoc',
     '**/*.txt',
+    ...excluding(CONFIG_TXT_GLOBS),
     '**/docs/**',
     '**/LICENSE*',
   ],
@@ -95,6 +119,11 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.ini',
     '**/*.cfg',
     '**/.editorconfig',
+    '**/.python-version',
+    ...CONFIG_TXT_GLOBS,
+    '**/setup.py',
+    '**/Pipfile',
+    '**/MANIFEST.in',
     '**/.github/**',
     '**/Dockerfile*',
     '**/*.tfvars',
@@ -128,6 +157,25 @@ const addInto = (target: ClocCounts, source: ClocCounts) => {
   for (const field of COUNT_FIELDS) target[field] += source[field]
 }
 
+// because plenty of real paths are under `.github/` or `.config/` and a glob
+// that silently skips them would undercount without saying so.
+const MATCH_OPTIONS = { dot: true }
+
+/**
+ * Matches one category's globs, with a `!`-prefixed glob excluding a path the
+ * rest matched. picomatch ORs an array, so a `!` glob left in one matches
+ * every path the others don't -- the two halves have to be run apart.
+ */
+const categoryMatcher = (globs: string[]) => {
+  const [excluded, included] = partition(globs, (glob) => glob.startsWith('!'))
+  const isIncluded = picomatch(included, MATCH_OPTIONS)
+  const isExcluded = picomatch(
+    excluded.map((glob) => glob.slice(1)),
+    MATCH_OPTIONS
+  )
+  return (path: string) => isIncluded(path) && !isExcluded(path)
+}
+
 /**
  * Sums a cloc diff into one tally per category. Every category is present
  * whether or not the diff touched it, so a caller reading one never has to
@@ -139,15 +187,7 @@ export function tallyDiff(
 ): DiffTally {
   // First match wins, so a spec file under a generated directory is still a test.
   const matchers = NON_SOURCE_CATEGORIES.map(
-    (category) =>
-      [
-        category,
-        picomatch(globs[category], {
-          // because plenty of real paths are under `.github/` or `.config/` and a
-          // glob that silently skips them would undercount without saying so.
-          dot: true,
-        }),
-      ] as const
+    (category) => [category, categoryMatcher(globs[category])] as const
   )
   const byCategory = zipObject(
     [...FILE_CATEGORIES],

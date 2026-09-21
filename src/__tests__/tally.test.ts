@@ -99,6 +99,39 @@ describe('tallyDiff', () => {
     expect(tally.byCategory.source.added.code).toBe(0)
   })
 
+  it('lets a `!` glob exclude a path the rest of its category matched', () => {
+    const tally = tallyDiff(
+      clocReport({
+        added: { 'notes.txt': { code: 6 }, 'requirements.txt': { code: 4 } },
+      }),
+      {
+        ...GLOBS,
+        docs: ['**/*.txt', '!**/requirements.txt'],
+        config: ['**/requirements.txt'],
+      }
+    )
+
+    expect(codePerCategory(tally)).toEqual({
+      source: 0,
+      tests: 0,
+      generated: 0,
+      docs: 6,
+      config: 4,
+    })
+  })
+
+  it('excludes against every include in the category, not just one', () => {
+    // `docs/robots.txt` matches `**/docs/**` too, and the `!` glob still wins.
+    const tally = tallyDiff(
+      clocReport({ added: { 'docs/robots.txt': { code: 1 } } }),
+      { ...GLOBS, docs: ['**/*.txt', '**/docs/**', '!**/robots.txt'] }
+    )
+
+    // Nothing else claims it, so it falls through to the source fallback.
+    expect(tally.byCategory.docs.added.code).toBe(0)
+    expect(tally.byCategory.source.added.code).toBe(1)
+  })
+
   it("ignores cloc's SUM and header siblings of the per-file entries", () => {
     const tally = tallyDiff(
       clocReport({
@@ -172,20 +205,43 @@ describe('the shipped patterns', () => {
     ['pkg/thing_test.go', 'tests'],
     ['src/test/java/AppTest.java', 'tests'],
     ['tests/conftest.py', 'tests'],
+    ['api/users/test_auth.py', 'tests'],
+    ['api/users/auth_test.py', 'tests'],
     // Also the precedence pair with tsconfig.json below: both are `**/*.json`,
     // and generated is matched before config.
     ['package-lock.json', 'generated'],
     ['go.sum', 'generated'],
+    // `**/*.lock` covers these and whatever lockfile a tool names next.
+    ['Cargo.lock', 'generated'],
+    ['poetry.lock', 'generated'],
+    ['flake.lock', 'generated'],
     ['migrations/0007_add_task_schedule.sql', 'generated'],
     ['api/service.pb.go', 'generated'],
     ['public/app.min.js', 'generated'],
+    ['api/rpc/service_pb2.pyi', 'generated'],
+    ['src/thing.egg-info/PKG-INFO', 'generated'],
     ['README.md', 'docs'],
     ['docs/architecture.adoc', 'docs'],
     ['LICENSE', 'docs'],
+    ['CHANGELOG.rst', 'docs'],
+    ['NOTICE.txt', 'docs'],
     ['tsconfig.json', 'config'],
     ['.github/workflows/ci.yml', 'config'],
     ['Dockerfile', 'config'],
     ['infra/prod.tfvars', 'config'],
+    ['pyproject.toml', 'config'],
+    ['setup.cfg', 'config'],
+    ['setup.py', 'config'],
+    // `**/*.txt` is docs, minus the `!` globs for the ones that are settings.
+    ['requirements.txt', 'config'],
+    ['requirements-dev.txt', 'config'],
+    ['requirements/dev.txt', 'config'],
+    ['runtime.txt', 'config'],
+    ['CMakeLists.txt', 'config'],
+    ['public/robots.txt', 'config'],
+    ['public/llms.txt', 'config'],
+    ['public/llms-full.txt', 'config'],
+    ['MANIFEST.in', 'config'],
   ])('classifies %s as %s', (file, expected) => {
     expect(categoryOf(file)).toBe(expected)
   })

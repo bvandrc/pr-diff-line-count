@@ -112,10 +112,10 @@ A category with no changes is left out of the table, and the `Total` row appears
 
 ## Categories
 
-- **tests** — specs, fixtures, and mocks: `**/__tests__/**`, `**/*.test.*`, `**/*_test.*`, `**/spec/**`, `**/conftest.py`, …
-- **generated** — machine-written and committed: lockfiles, `**/dist/**`, `**/build/**`, `**/vendor/**`, `**/*.pb.go`, `**/__snapshots__/**`, `**/*.min.js`, …
-- **docs** — prose: `**/*.md`, `**/*.rst`, `**/*.adoc`, `**/docs/**`, `LICENSE*`
-- **config** — machine-read settings: `**/*.json`, `**/*.yml`, `**/*.toml`, `**/*.ini`, `**/.github/**`, `**/Dockerfile*`, `**/*.tfvars`
+- **tests** — specs, fixtures, and mocks: `**/__tests__/**`, `**/*.test.*`, `**/*_test.*`, `**/spec/**`, `**/test_*.py`, `**/conftest.py`, …
+- **generated** — machine-written and committed: lockfiles, `**/dist/**`, `**/build/**`, `**/vendor/**`, `**/*.pb.go`, `**/*_pb2.py`, `**/*.egg-info/**`, `**/__snapshots__/**`, `**/*.min.js`, …
+- **docs** — prose: `**/*.md`, `**/*.rst`, `**/*.adoc`, `**/*.txt` (bar the ones config claims), `**/docs/**`, `LICENSE*`
+- **config** — machine-read settings: `**/*.json`, `**/*.yml`, `**/*.toml`, `**/*.ini`, `**/*.cfg`, `**/requirements*.txt`, `**/CMakeLists.txt`, `**/robots.txt`, `**/llms*.txt`, `**/setup.py`, `**/.github/**`, `**/Dockerfile*`, `**/*.tfvars`
 - **source** — the code the change is actually about: everything matching none of the above.
 
 The categories are matched **in the order above** and the **first match wins** (i.e., a `.spec` file under a generated directory is still counted as a test). **source** is last because it is the fallback, which also means an unfamiliar language or an extensionless file is counted rather than quietly dropped.

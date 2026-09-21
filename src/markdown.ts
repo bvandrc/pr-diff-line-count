@@ -3,7 +3,7 @@
  * summary and the `markdown` output.
  */
 
-import { sum } from 'es-toolkit'
+import { mapValues, pick, sum } from 'es-toolkit'
 import { z } from 'zod'
 
 import { CHANGE_KINDS } from './cloc/run.ts'
@@ -119,7 +119,7 @@ export function renderMarkdown(
   if (shown.length > 1) rows.push(row('<strong>Total</strong>', tally.total))
 
   const source = tally.byCategory.source
-  const srcCodeHeaderStr = `**${linesChangedStr({ label: 'Source code:', added: source.added.code, modified: source.modified.code, removed: source.removed.code })}**`
+  const srcCodeHeaderStr = `**${linesChangedStr({ label: 'Source code:', ...mapValues(source, ({ code }) => code) })}**`
   const ghTotalsStr = ghTotals
     ? ` ${unbreakable(' · ')} ${linesChangedStr({ label: 'GitHub reports', added: ghTotals.additions, removed: ghTotals.deletions })}`
     : ''
@@ -137,7 +137,7 @@ export function renderMarkdown(
       ...rows.map((cells) => `<tr>${cells}</tr>`),
       '</table>',
     ].join('\n'),
-    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\n${linesChangedStr({ label: 'Blank lines are excluded above:', added: tally.total.added.blank, removed: tally.total.removed.blank })}.</sub>`
+    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\n${linesChangedStr({ label: 'Blank lines are excluded above:', ...mapValues(pick(tally.total, ['added', 'removed']), ({ blank }) => blank) })}.</sub>`
   )
 
   return lines.join('\n\n')

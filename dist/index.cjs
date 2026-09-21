@@ -49747,6 +49747,18 @@ function sum(nums) {
   return result;
 }
 
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/mapValues.mjs
+function mapValues(object2, getNewValue) {
+  const result = {};
+  const keys = Object.keys(object2);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const value = object2[key];
+    result[key] = getNewValue(value, key, object2);
+  }
+  return result;
+}
+
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/pick.mjs
 function pick2(obj, keys) {
   const result = {};
@@ -49917,7 +49929,7 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   );
   if (shown.length > 1) rows.push(row("<strong>Total</strong>", tally.total));
   const source = tally.byCategory.source;
-  const srcCodeHeaderStr = `**${linesChangedStr({ label: "Source code:", added: source.added.code, modified: source.modified.code, removed: source.removed.code })}**`;
+  const srcCodeHeaderStr = `**${linesChangedStr({ label: "Source code:", ...mapValues(source, ({ code }) => code) })}**`;
   const ghTotalsStr = ghTotals ? ` ${unbreakable(" \xB7 ")} ${linesChangedStr({ label: "GitHub reports", added: ghTotals.additions, removed: ghTotals.deletions })}` : "";
   lines.push(
     `${srcCodeHeaderStr}${ghTotalsStr}`,
@@ -49931,7 +49943,7 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
       "</table>"
     ].join("\n"),
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-${linesChangedStr({ label: "Blank lines are excluded above:", added: tally.total.added.blank, removed: tally.total.removed.blank })}.</sub>`
+${linesChangedStr({ label: "Blank lines are excluded above:", ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
   );
   return lines.join("\n\n");
 }

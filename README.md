@@ -18,7 +18,7 @@ The comment, and the summary table with it:
 **Source&nbsp;code:&nbsp;+91&nbsp;/&nbsp;~68&nbsp;/&nbsp;−9** &nbsp;·&nbsp; GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144
 
 <table>
-<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
+<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comments</th></tr>
 <tr><td></td><th align="center">+</th><th align="center">~</th><th align="center">−</th><th align="center">+</th><th align="center">−</th></tr>
 <tr><td>Source</td><td align="right">91</td><td align="right">68</td><td align="right">9</td><td align="right">106</td><td align="right">42</td></tr>
 <tr><td>Tests</td><td align="right">12</td><td align="right">0</td><td align="right">0</td><td align="right">4</td><td align="right">0</td></tr>

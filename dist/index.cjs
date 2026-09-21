@@ -49871,7 +49871,7 @@ var CATEGORY_LABELS = {
 };
 var COLUMN_GROUPS = [
   { label: "code", signs: ["+", "~", "\u2212"] },
-  { label: "comment", signs: ["+", "\u2212"] }
+  { label: "comments", signs: ["+", "\u2212"] }
 ];
 var githubDiffTotalsSchema = external_exports.object({
   additions: external_exports.number(),

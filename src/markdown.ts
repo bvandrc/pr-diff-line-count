@@ -28,7 +28,7 @@ const CATEGORY_LABELS = {
  */
 const COLUMN_GROUPS = [
   { label: 'code', signs: ['+', '~', '−'] },
-  { label: 'comment', signs: ['+', '−'] },
+  { label: 'comments', signs: ['+', '−'] },
 ] as const
 
 /**

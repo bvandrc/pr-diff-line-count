@@ -1,6 +1,6 @@
 {
   "name": "pr-diff-line-count",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.4.2",
@@ -24,7 +24,6 @@
     "@actions/github": "^9",
     "@actions/tool-cache": "^4",
     "es-toolkit": "^1",
-    "markdown-table": "^3",
     "picomatch": "^4",
     "zod": "^4"
   },

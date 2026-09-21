@@ -49747,6 +49747,18 @@ function sum(nums) {
   return result;
 }
 
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/mapValues.mjs
+function mapValues(object2, getNewValue) {
+  const result = {};
+  const keys = Object.keys(object2);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const value = object2[key];
+    result[key] = getNewValue(value, key, object2);
+  }
+  return result;
+}
+
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/pick.mjs
 function pick2(obj, keys) {
   const result = {};
@@ -49755,147 +49767,6 @@ function pick2(obj, keys) {
     if (Object.hasOwn(obj, key)) result[key] = obj[key];
   }
   return result;
-}
-
-// node_modules/.pnpm/markdown-table@3.0.4/node_modules/markdown-table/index.js
-function defaultStringLength(value) {
-  return value.length;
-}
-function markdownTable(table, options) {
-  const settings = options || {};
-  const align = (settings.align || []).concat();
-  const stringLength = settings.stringLength || defaultStringLength;
-  const alignments = [];
-  const cellMatrix = [];
-  const sizeMatrix = [];
-  const longestCellByColumn = [];
-  let mostCellsPerRow = 0;
-  let rowIndex = -1;
-  while (++rowIndex < table.length) {
-    const row3 = [];
-    const sizes2 = [];
-    let columnIndex2 = -1;
-    if (table[rowIndex].length > mostCellsPerRow) {
-      mostCellsPerRow = table[rowIndex].length;
-    }
-    while (++columnIndex2 < table[rowIndex].length) {
-      const cell = serialize(table[rowIndex][columnIndex2]);
-      if (settings.alignDelimiters !== false) {
-        const size = stringLength(cell);
-        sizes2[columnIndex2] = size;
-        if (longestCellByColumn[columnIndex2] === void 0 || size > longestCellByColumn[columnIndex2]) {
-          longestCellByColumn[columnIndex2] = size;
-        }
-      }
-      row3.push(cell);
-    }
-    cellMatrix[rowIndex] = row3;
-    sizeMatrix[rowIndex] = sizes2;
-  }
-  let columnIndex = -1;
-  if (typeof align === "object" && "length" in align) {
-    while (++columnIndex < mostCellsPerRow) {
-      alignments[columnIndex] = toAlignment(align[columnIndex]);
-    }
-  } else {
-    const code = toAlignment(align);
-    while (++columnIndex < mostCellsPerRow) {
-      alignments[columnIndex] = code;
-    }
-  }
-  columnIndex = -1;
-  const row2 = [];
-  const sizes = [];
-  while (++columnIndex < mostCellsPerRow) {
-    const code = alignments[columnIndex];
-    let before = "";
-    let after = "";
-    if (code === 99) {
-      before = ":";
-      after = ":";
-    } else if (code === 108) {
-      before = ":";
-    } else if (code === 114) {
-      after = ":";
-    }
-    let size = settings.alignDelimiters === false ? 1 : Math.max(
-      1,
-      longestCellByColumn[columnIndex] - before.length - after.length
-    );
-    const cell = before + "-".repeat(size) + after;
-    if (settings.alignDelimiters !== false) {
-      size = before.length + size + after.length;
-      if (size > longestCellByColumn[columnIndex]) {
-        longestCellByColumn[columnIndex] = size;
-      }
-      sizes[columnIndex] = size;
-    }
-    row2[columnIndex] = cell;
-  }
-  cellMatrix.splice(1, 0, row2);
-  sizeMatrix.splice(1, 0, sizes);
-  rowIndex = -1;
-  const lines = [];
-  while (++rowIndex < cellMatrix.length) {
-    const row3 = cellMatrix[rowIndex];
-    const sizes2 = sizeMatrix[rowIndex];
-    columnIndex = -1;
-    const line = [];
-    while (++columnIndex < mostCellsPerRow) {
-      const cell = row3[columnIndex] || "";
-      let before = "";
-      let after = "";
-      if (settings.alignDelimiters !== false) {
-        const size = longestCellByColumn[columnIndex] - (sizes2[columnIndex] || 0);
-        const code = alignments[columnIndex];
-        if (code === 114) {
-          before = " ".repeat(size);
-        } else if (code === 99) {
-          if (size % 2) {
-            before = " ".repeat(size / 2 + 0.5);
-            after = " ".repeat(size / 2 - 0.5);
-          } else {
-            before = " ".repeat(size / 2);
-            after = before;
-          }
-        } else {
-          after = " ".repeat(size);
-        }
-      }
-      if (settings.delimiterStart !== false && !columnIndex) {
-        line.push("|");
-      }
-      if (settings.padding !== false && // Don’t add the opening space if we’re not aligning and the cell is
-      // empty: there will be a closing space.
-      !(settings.alignDelimiters === false && cell === "") && (settings.delimiterStart !== false || columnIndex)) {
-        line.push(" ");
-      }
-      if (settings.alignDelimiters !== false) {
-        line.push(before);
-      }
-      line.push(cell);
-      if (settings.alignDelimiters !== false) {
-        line.push(after);
-      }
-      if (settings.padding !== false) {
-        line.push(" ");
-      }
-      if (settings.delimiterEnd !== false || columnIndex !== mostCellsPerRow - 1) {
-        line.push("|");
-      }
-    }
-    lines.push(
-      settings.delimiterEnd === false ? line.join("").replace(/ +$/, "") : line.join("")
-    );
-  }
-  return lines.join("\n");
-}
-function serialize(value) {
-  return value === null || value === void 0 ? "" : String(value);
-}
-function toAlignment(value) {
-  const code = typeof value === "string" ? value.codePointAt(0) : 0;
-  return code === 67 || code === 99 ? 99 : code === 76 || code === 108 ? 108 : code === 82 || code === 114 ? 114 : 0;
 }
 
 // src/tally.ts
@@ -50002,6 +49873,15 @@ function tallyDiff(report, globs) {
   return { byCategory, total };
 }
 
+// src/utils/index.ts
+var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
+var bold = (content) => `<strong>${content}</strong>`;
+var italic = (content) => `<em>${content}</em>`;
+var attrsStr = (attrs) => Object.entries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
+var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
+var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
+var tr = (cells) => `<tr>${cells}</tr>`;
+
 // src/markdown.ts
 var CATEGORY_LABELS = {
   source: "Source",
@@ -50010,19 +49890,37 @@ var CATEGORY_LABELS = {
   docs: "Docs",
   config: "Config"
 };
+var COLUMN_GROUPS = [
+  { label: "code", signs: ["+", "~", "\u2212"] },
+  { label: "comments", signs: ["+", "\u2212"] }
+];
 var githubDiffTotalsSchema = external_exports.object({
   additions: external_exports.number(),
   deletions: external_exports.number()
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
-var row = (label, tally) => [
+var linesChangedStr = ({
   label,
-  tally.added.code,
-  tally.modified.code,
-  tally.removed.code,
-  tally.added.comment,
-  tally.removed.comment
-].map(String);
+  added,
+  modified,
+  removed
+}) => unbreakable(
+  `${label} ${[
+    `+${added}`,
+    modified === void 0 ? "" : `~${modified}`,
+    `\u2212${removed}`
+  ].filter(Boolean).join(" / ")}`
+);
+var COLUMN_COUNT = 1 + sum(COLUMN_GROUPS.map(({ signs }) => signs.length));
+var row = (label, tally, { boldCode = false } = {}) => [
+  td(label),
+  ...[tally.added, tally.modified, tally.removed].map(
+    ({ code: count }) => td(boldCode ? bold(count) : count, { align: "right" })
+  ),
+  ...[tally.added, tally.removed].map(
+    ({ comment: count }) => td(count, { align: "right" })
+  )
+].join("");
 function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   const lines = ["### PR Diff Line Count"];
   const shown = FILE_CATEGORIES.filter(
@@ -50035,34 +49933,42 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
     return lines.join("\n\n");
   }
   const rows = shown.map(
-    (category) => row(CATEGORY_LABELS[category], tally.byCategory[category])
+    (category) => category === "source" ? row(bold(CATEGORY_LABELS.source), tally.byCategory.source, {
+      boldCode: true
+    }) : row(CATEGORY_LABELS[category], tally.byCategory[category])
   );
-  if (shown.length > 1) rows.push(row("**Total**", tally.total));
-  const source = tally.byCategory.source;
-  const ghTotalsStr = ghTotals ? ` &nbsp;\xB7&nbsp; GitHub reports +${ghTotals.additions} / \u2212${ghTotals.deletions}` : "";
+  if (shown.length > 1) rows.push(row(bold("Total"), tally.total));
+  if (ghTotals)
+    rows.push(
+      td(
+        italic(
+          linesChangedStr({
+            label: "GitHub reports",
+            added: ghTotals.additions,
+            removed: ghTotals.deletions
+          })
+        ),
+        { colspan: COLUMN_COUNT, align: "center" }
+      )
+    );
   lines.push(
-    `**Source code: +${source.added.code} / ~${source.modified.code} / \u2212${source.removed.code}**${ghTotalsStr}`,
-    markdownTable(
-      [
-        [
-          // headers
-          "",
-          ...[
-            ["+", "code"],
-            ["~", "code"],
-            ["\u2212", "code"],
-            ["+", "comment"],
-            ["\u2212", "comment"]
-          ].map(([sign, label]) => `${sign}&nbsp;${label}`)
-        ],
-        // rows
-        ...rows
-      ],
-      // Counts read as columns of digits; only the labels want the left edge.
-      { align: ["l", "r", "r", "r", "r", "r"] }
-    ),
-    `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.</sub>`,
-    `<sub>Blank lines are excluded above: +${tally.total.added.blank} / \u2212${tally.total.removed.blank}.</sub>`
+    [
+      "<table>",
+      // label header row
+      tr(
+        td("") + COLUMN_GROUPS.map(
+          ({ label, signs }) => th(label, { colspan: signs.length, align: "center" })
+        ).join("")
+      ),
+      // sign header row
+      tr(
+        td("") + COLUMN_GROUPS.flatMap(({ signs }) => signs).map((sign) => th(sign, { align: "center" })).join("")
+      ),
+      ...rows.map(tr),
+      "</table>"
+    ].join("\n"),
+    `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
+${linesChangedStr({ label: "Blank lines are excluded above:", ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
   );
   return lines.join("\n\n");
 }

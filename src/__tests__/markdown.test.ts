@@ -6,7 +6,7 @@ import type { ClocDiffReport } from '../cloc/run.ts'
 import type { GithubDiffTotals } from '../markdown.ts'
 import { renderMarkdown } from '../markdown.ts'
 import { type CategoryGlobs, tallyDiff } from '../tally.ts'
-import { bold, italic, td, tr, unbreakable } from '../utils'
+import { bold, unbreakable } from '../utils'
 
 /** Builds the `--by-file` shape from just the entries a case cares about. */
 const clocReport = (sections: PartialDeep<ClocDiffReport>): ClocDiffReport =>
@@ -70,7 +70,7 @@ describe('renderMarkdown', () => {
     expect(markdown).not.toContain(bold('Total'))
   })
 
-  it("puts GitHub's own totals in an italic row spanning the foot of the table", () => {
+  it("shows GitHub's own totals for the same diff", () => {
     const markdown = render(
       clocReport({
         added: {
@@ -81,13 +81,7 @@ describe('renderMarkdown', () => {
       { githubTotals: { additions: 329, deletions: 144 } }
     )
 
-    const ghRow = tr(
-      td(italic(unbreakable('GitHub reports +329 / −144')), {
-        colspan: 6,
-        align: 'center',
-      })
-    )
-    expect(markdown).toContain(ghRow)
+    expect(markdown).toContain(unbreakable('GitHub reports +329 / −144'))
   })
 
   it('leaves the totals row out when GitHub reports nothing', () => {

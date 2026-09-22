@@ -69,9 +69,12 @@ export const DEFAULT_CATEGORY_GLOBS = {
     // Any language
     '**/__tests__/**',
     '**/__mocks__/**',
+    '**/__fixtures__/**',
+    '**/testdata/**',
     '**/test/**',
     '**/tests/**',
     '**/spec/**',
+    '**/mocks/**',
     '**/*.test.*',
     '**/*.spec.*',
     '**/*_test.*',
@@ -82,6 +85,10 @@ export const DEFAULT_CATEGORY_GLOBS = {
     // Java, Kotlin, and C#
     '**/*Test.*',
     '**/*Tests.*',
+    '**/*Spec.*',
+    '**/*IT.java',
+    // C and C++
+    '**/*_unittest.*',
   ],
   generated: [
     // Any language -- lockfiles
@@ -90,16 +97,22 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/pnpm-lock.yaml',
     '**/bun.lockb',
     '**/go.sum',
+    '**/.terraform.lock.hcl',
     // Any language -- build output, vendored code, etc.
     '**/dist/**',
     '**/build/**',
+    '**/target/**',
     '**/vendor/**',
+    '**/node_modules/**',
+    '**/coverage/**',
     '**/migrations/**',
     '**/__snapshots__/**',
     '**/*.generated.*',
     // Web
     '**/*.min.js',
     '**/*.min.css',
+    '**/.next/**',
+    '**/*.tsbuildinfo',
     // Python
     '**/*_pb2.py',
     '**/*_pb2.pyi',
@@ -111,6 +124,23 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.freezed.dart',
     // Go
     '**/*.pb.go',
+    '**/*_gen.go',
+    '**/zz_generated*.go',
+    // Java and Kotlin -- the Gradle wrapper is committed but written by Gradle
+    '**/gradle/wrapper/**',
+    '**/gradlew',
+    '**/gradlew.bat',
+    // C and C++
+    '**/CMakeFiles/**',
+    '**/*.pb.cc',
+    '**/*.pb.h',
+    // C#
+    '**/obj/**',
+    // Swift and Objective-C
+    '**/Pods/**',
+    '**/*.pbxproj',
+    // Elixir
+    '**/_build/**',
   ],
   docs: [
     // Any language
@@ -132,15 +162,44 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.ini',
     '**/*.cfg',
     ...CONFIG_TXT_GLOBS, // The `.txt` settings docs hands over (grouped by language above)
-    // Any language -- editor, CI, and container tooling
+    // Any language -- editor, CI, container, and build tooling
     '**/.editorconfig',
     '**/.github/**',
     '**/Dockerfile*',
+    '**/Makefile*',
+    // Any language -- toolchain version pins
+    '**/.*-version',
+    '**/.nvmrc',
+    '**/.tool-versions',
     // Python
-    '**/.python-version',
     '**/setup.py',
     '**/Pipfile',
     '**/MANIFEST.in',
+    // Go
+    '**/go.mod',
+    '**/go.work',
+    // Java and Kotlin
+    '**/pom.xml',
+    '**/*.gradle',
+    '**/*.gradle.kts',
+    '**/gradle.properties',
+    // C and C++
+    '**/*.cmake',
+    // C#
+    '**/*.csproj',
+    '**/*.sln',
+    '**/*.props',
+    '**/*.targets',
+    // Ruby
+    '**/Gemfile',
+    '**/Rakefile',
+    '**/*.gemspec',
+    // Swift and Objective-C
+    '**/Package.swift',
+    '**/Podfile',
+    '**/*.podspec',
+    // Elixir
+    '**/mix.exs',
     // Terraform
     '**/*.tfvars',
   ],

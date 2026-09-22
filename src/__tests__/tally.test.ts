@@ -265,6 +265,10 @@ describe('the shipped patterns', () => {
     ['mix.exs', 'config'],
     ['.nvmrc', 'config'],
     ['.tool-versions', 'config'],
+    // One `**/.*-version` glob stands in for the per-language pins.
+    ['.python-version', 'config'],
+    ['.ruby-version', 'config'],
+    ['.java-version', 'config'],
     ['pyproject.toml', 'config'],
     ['setup.cfg', 'config'],
     ['setup.py', 'config'],

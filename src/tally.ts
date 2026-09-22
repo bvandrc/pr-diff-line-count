@@ -70,6 +70,7 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/__tests__/**',
     '**/__mocks__/**',
     '**/__fixtures__/**',
+    '**/testdata/**',
     '**/test/**',
     '**/tests/**',
     '**/spec/**',
@@ -88,8 +89,6 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*IT.java',
     // C and C++
     '**/*_unittest.*',
-    // Go, where a fixture directory is named by the toolchain
-    '**/testdata/**',
   ],
   generated: [
     // Any language -- lockfiles
@@ -99,8 +98,7 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/bun.lockb',
     '**/go.sum',
     '**/.terraform.lock.hcl',
-    // Any language -- build output, vendored code, etc. `target/` is both
-    // Maven's and Cargo's.
+    // Any language -- build output, vendored code, etc.
     '**/dist/**',
     '**/build/**',
     '**/target/**',
@@ -170,12 +168,10 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/Dockerfile*',
     '**/Makefile*',
     // Any language -- toolchain version pins
+    '**/.*-version',
     '**/.nvmrc',
-    '**/.node-version',
-    '**/.ruby-version',
     '**/.tool-versions',
     // Python
-    '**/.python-version',
     '**/setup.py',
     '**/Pipfile',
     '**/MANIFEST.in',

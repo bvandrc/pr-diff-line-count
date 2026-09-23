@@ -57,9 +57,8 @@ export type ClocCounts = OmitIndexSignatureDeep<
  * cloc's `--diff --by-file --json` shape: a section per change kind, each keyed
  * by repo-relative path.
  *
- * Derived from the schema, so the two cannot drift, with cloc's `same` and
- * `header` siblings left out -- they are parsed and ignored, not part of what
- * we hand on.
+ * cloc's `same` and `header` siblings are left out -- they are parsed and
+ * ignored, not part of what we hand on.
  */
 export type ClocDiffReport = OmitIndexSignatureDeep<
   z.infer<typeof clocDiffReportSchema>

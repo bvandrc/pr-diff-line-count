@@ -24,9 +24,8 @@ const CATEGORY_LABELS = {
 } as const satisfies Record<FileCategory, string>
 
 /**
- * The count columns, grouped under the header each group spans.
- *
- * The order is the order a row's cells are built in.
+ * The count columns, grouped under the header each group spans. The order is
+ * the order a row's cells are built in.
  */
 const COLUMN_GROUPS = [
   { label: 'code', signs: ['+', '~', '−'] },

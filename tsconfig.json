@@ -1,5 +1,5 @@
 {
-  "include": ["./src/**/*", "./script/**/*"],
+  "include": ["./src/**/*", "./script/**/*", "./vitest.config.ts"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "noEmit": true,
@@ -12,6 +12,6 @@
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node", "vitest/globals"]
   }
 }

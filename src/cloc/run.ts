@@ -16,8 +16,10 @@ export type ChangeKind = (typeof CHANGE_KINDS)[number]
 
 /**
  * `loose()` on both levels: cloc adds fields between releases -- `nFiles` sits
- * beside the counts already -- and an addition is no reason to fail. A count
- * that stops being a number is, since the alternative is a table of NaNs.
+ * beside the counts already -- and an addition is no reason to fail.
+ *
+ * A count that stops being a number is, since the alternative is a table of
+ * NaNs.
  */
 const clocCountsSchema = z
   .object({
@@ -32,9 +34,11 @@ const clocSectionSchema = z.record(z.string(), clocCountsSchema)
 
 /**
  * cloc's `--diff --by-file --json` shape: one section per change kind, each
- * keyed by repo-relative path. Every changed path appears in all of them,
- * zeroed where that kind didn't apply, so the sections share one file set.
- * `SUM` and `header` sit among the per-file entries and are not files.
+ * keyed by repo-relative path.
+ *
+ * Every changed path appears in all of them, zeroed where that kind didn't
+ * apply, so the sections share one file set. `SUM` and `header` sit among the
+ * per-file entries and are not files.
  */
 const clocDiffReportSchema = z
   .object({
@@ -50,10 +54,11 @@ export type ClocCounts = OmitIndexSignatureDeep<
 >
 
 /**
- * cloc's `--diff --by-file --json` shape: a section per change kind, each
- * keyed by repo-relative path. Derived from the schema, so the two cannot
- * drift, with cloc's `same` and `header` siblings left out -- they are parsed
- * and ignored, not part of what we hand on.
+ * cloc's `--diff --by-file --json` shape: a section per change kind, each keyed
+ * by repo-relative path.
+ *
+ * cloc's `same` and `header` siblings are left out -- they are parsed and
+ * ignored, not part of what we hand on.
  */
 export type ClocDiffReport = OmitIndexSignatureDeep<
   z.infer<typeof clocDiffReportSchema>
@@ -74,17 +79,20 @@ async function assertPerl(): Promise<void> {
 /**
  * Per-file limit on cloc's diffing. cloc's own default of 10s is far too low
  * for a committed bundle: its diff cost climbs roughly quadratically, measured
- * here at 6s for 16k changed-heavy lines and 68s for 50k. Not unlimited, since
- * cloc warns that a big file of repeated lines can take `sdiff` hours -- and
- * with the check below, too low now fails loudly rather than counting wrong.
+ * here at 6s for 16k changed-heavy lines and 68s for 50k.
+ *
+ * Not unlimited, since cloc warns that a big file of repeated lines can take
+ * `sdiff` hours -- and with the check below, too low now fails loudly rather
+ * than counting wrong.
  */
 const DIFF_TIMEOUT_SECONDS = 300
 
 /**
- * Counts one revision range, returning cloc's per-file diff. Resolves to an
- * empty report when the range holds nothing cloc can count -- it writes no file
- * at all in that case rather than an empty one. Throws rather than returning
- * counts cloc itself reported an error for.
+ * Counts one revision range, returning cloc's per-file diff.
+ *
+ * Resolves to an empty report when the range holds nothing cloc can count -- it
+ * writes no file at all in that case rather than an empty one. Throws rather
+ * than returning counts cloc itself reported an error for.
  */
 export async function runClocDiff({
   baseSha,

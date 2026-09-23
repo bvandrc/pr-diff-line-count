@@ -6,7 +6,7 @@ A GitHub Action that counts the code lines a pull request changes, separating co
 
 Conventions live outside this file, synced from https://github.com/bvandrc/bvandrc-conventions — follow all of them:
 
-@conventions/typescript.md — language-level TypeScript/JavaScript rules @conventions/all.md — practice for every repo: branches, formatting, markdown, PR reviews
+@conventions/typescript.md — language-level TypeScript/JavaScript rules @conventions/ts-unit-testing.md — unit test layout, naming, fixtures, and assertions @conventions/all.md — practice for every repo: branches, formatting, markdown, PR reviews
 
 `conventions/` is overwritten on every sync. Edit a rule upstream, never in that directory.
 

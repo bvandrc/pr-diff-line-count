@@ -13,8 +13,10 @@ export type ShaRange = {
  * Resolves the range to count from the two candidate revisions, returning the
  * merge base of them as `baseSha` rather than `base` itself: diffing the base
  * branch's tip would bill a pull request for commits that landed on it after
- * the branch forked. GitHub's own +/- counts from the merge base too, so this
- * keeps the two comparable.
+ * the branch forked.
+ *
+ * GitHub's own +/- counts from the merge base too, so this keeps the two
+ * comparable.
  *
  * Throws when either candidate is missing, and when the two have no merge base
  * in the checkout -- which a shallow clone causes, since it holds the two tips

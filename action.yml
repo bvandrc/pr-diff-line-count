@@ -1,5 +1,5 @@
 name: PR Diff Line Count
-description: Count the code lines a pull request's diff actually changes, with comments, blank lines, tests and generated files apart.
+description: Count the code lines a pull request's diff actually changes, with comments, blank lines, tests, and generated files apart.
 author: bvandrc
 
 branding:

@@ -27,8 +27,9 @@ const CLOC_URL = `https://github.com/AlDanial/cloc/releases/download/v${cloc.ver
 
 /**
  * Resolves to the path of the pinned cloc script, downloading it on first use
- * and reusing the runner's tool cache afterwards. Throws rather than returning
- * a script whose checksum doesn't match.
+ * and reusing the runner's tool cache afterwards.
+ *
+ * Throws rather than returning a script whose checksum doesn't match.
  */
 export async function downloadCloc(): Promise<string> {
   const cached = find('cloc', cloc.version)

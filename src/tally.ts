@@ -22,9 +22,11 @@ export const FILE_CATEGORIES = ['source', ...NON_SOURCE_CATEGORIES] as const
 export type FileCategory = (typeof FILE_CATEGORIES)[number]
 
 /**
- * Globs deciding what is what. Anything matching none of them counts as source.
- * A `!`-prefixed glob excludes a path the rest of its category matched, which
- * is how a broad extension keeps the exceptions that are not really that kind.
+ * Globs deciding what is what.
+ *
+ * Anything matching none of them counts as source. A `!`-prefixed glob excludes
+ * a path the rest of its category matched, which is how a broad extension keeps
+ * the exceptions that are not really that kind.
  */
 export type CategoryGlobs = Record<
   (typeof NON_SOURCE_CATEGORIES)[number],
@@ -40,9 +42,11 @@ export type DiffTally = {
 }
 
 /**
- * The `.txt` paths a machine reads, which the broad `.txt` glob would
- * otherwise hand to docs. `config` claims them and `docs` excludes them from
- * this one list, so the two cannot drift into a file being both or neither.
+ * The `.txt` paths a machine reads, which the broad `.txt` glob would otherwise
+ * hand to docs.
+ *
+ * `config` claims them and `docs` excludes them from this one list, so the two
+ * cannot drift into a file being both or neither.
  */
 const CONFIG_TXT_GLOBS = [
   // Python
@@ -60,9 +64,10 @@ const CONFIG_TXT_GLOBS = [
 const excluding = (globs: string[]) => globs.map((glob) => `!${glob}`)
 
 /**
- * The globs each category is decided by. Not configurable yet -- a workflow
- * gets these or nothing, which keeps the categories comparable across repos
- * until someone needs otherwise.
+ * The globs each category is decided by.
+ *
+ * Not configurable yet -- a workflow gets these or nothing, which keeps the
+ * categories comparable across repos until someone needs otherwise.
  */
 export const DEFAULT_CATEGORY_GLOBS = {
   tests: [
@@ -209,9 +214,10 @@ export const DEFAULT_CATEGORY_GLOBS = {
 const NON_FILE_KEYS = new Set(['SUM', 'header'])
 
 /**
- * The fields of a cloc count. The `emptyCounts` return annotation is what
- * keeps this list complete: drop one and the zeroed object stops satisfying
- * `ClocCounts`.
+ * The fields of a cloc count.
+ *
+ * The `emptyCounts` return annotation is what keeps this list complete: drop
+ * one and the zeroed object stops satisfying `ClocCounts`.
  */
 const COUNT_FIELDS = ['code', 'comment', 'blank'] as const
 
@@ -252,9 +258,10 @@ const categoryMatcher = (globs: string[]) => {
 }
 
 /**
- * Sums a cloc diff into one tally per category. Every category is present
- * whether or not the diff touched it, so a caller reading one never has to
- * tell "no lines" apart from "key absent".
+ * Sums a cloc diff into one tally per category.
+ *
+ * Every category is present whether or not the diff touched it, so a caller
+ * reading one never has to tell "no lines" apart from "key absent".
  */
 export function tallyDiff(
   report: ClocDiffReport,

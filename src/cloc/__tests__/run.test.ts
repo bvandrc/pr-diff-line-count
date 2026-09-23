@@ -3,14 +3,14 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { sumBy } from 'es-toolkit'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { type ClocDiffReport, runClocDiff } from '../run.ts'
 
 /**
- * Drives the real cloc against real git history. The counting is cloc's, but
- * which cloc we get and how we invoke it is ours, and neither is observable
- * from a fixture.
+ * Drives the real cloc against real git history.
+ *
+ * The counting is cloc's, but which cloc we get and how we invoke it is ours,
+ * and neither is observable from a fixture.
  */
 describe('runClocDiff', () => {
   let repo: string

@@ -1,6 +1,5 @@
 import { mapValues } from 'es-toolkit'
 import type { PartialDeep } from 'type-fest'
-import { describe, expect, it } from 'vitest'
 
 import type { ClocDiffReport } from '../cloc/run.ts'
 import type { GithubDiffTotals } from '../markdown.ts'

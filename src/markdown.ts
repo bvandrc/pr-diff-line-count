@@ -24,8 +24,9 @@ const CATEGORY_LABELS = {
 } as const satisfies Record<FileCategory, string>
 
 /**
- * The count columns, grouped under the header each group spans. The order is
- * the order a row's cells are built in.
+ * The count columns, grouped under the header each group spans.
+ *
+ * The order is the order a row's cells are built in.
  */
 const COLUMN_GROUPS = [
   { label: 'code', signs: ['+', '~', '−'] },
@@ -34,6 +35,7 @@ const COLUMN_GROUPS = [
 
 /**
  * GitHub's own PR-level counts, shown alongside ours so the gap is visible.
+ *
  * Exported as a schema because the event payload they come from is untyped.
  */
 export const githubDiffTotalsSchema = z.object({
@@ -49,8 +51,9 @@ const hasAnyLine = (tally: CategoryTally) =>
 
 /**
  * One labelled phrase of counts — `Source code: +1 / ~3 / −0` — kept whole.
- * `modified` is left out for the sources that have no such count, like
- * GitHub's own totals.
+ *
+ * `modified` is left out for the sources that have no such count, like GitHub's
+ * own totals.
  */
 const linesChangedStr = ({
   label,
@@ -93,8 +96,10 @@ const row = (
   ].join('')
 
 /**
- * Renders one diff as a table. Returns markdown ready to post or display, with
- * untouched categories left out of the table entirely.
+ * Renders one diff as a table.
+ *
+ * Returns markdown ready to post or display, with untouched categories left out
+ * of the table entirely.
  *
  * The table is HTML rather than markdown: the sign columns are grouped under a
  * spanning `code` / `comment` header, and a markdown table has no colspan.

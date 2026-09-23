@@ -1,6 +1,5 @@
 import { mapValues } from 'es-toolkit'
 import type { PartialDeep } from 'type-fest'
-import { describe, expect, it } from 'vitest'
 
 import type { ClocDiffReport } from '../cloc/run.ts'
 import {
@@ -95,8 +94,7 @@ describe('tallyDiff', () => {
       }
     )
 
-    expect(tally.byCategory.config.added.code).toBe(20)
-    expect(tally.byCategory.source.added.code).toBe(0)
+    expect(codePerCategory(tally)).toMatchObject({ config: 20, source: 0 })
   })
 
   it('lets a `!` glob exclude a path the rest of its category matched', () => {
@@ -128,8 +126,7 @@ describe('tallyDiff', () => {
     )
 
     // Nothing else claims it, so it falls through to the source fallback.
-    expect(tally.byCategory.docs.added.code).toBe(0)
-    expect(tally.byCategory.source.added.code).toBe(1)
+    expect(codePerCategory(tally)).toMatchObject({ docs: 0, source: 1 })
   })
 
   it("ignores cloc's SUM and header siblings of the per-file entries", () => {

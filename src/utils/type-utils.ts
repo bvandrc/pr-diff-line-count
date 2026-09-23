@@ -8,10 +8,11 @@ import type { IsEmptyObject, OmitIndexSignature, UnknownArray } from 'type-fest'
 type CleanValues<T> = { [K in keyof T]: OmitIndexSignatureDeep<T[K]> }
 
 /**
- * Strips `{ [k: string]: unknown }` at every level of a plain data shape --
- * the signature a zod `loose()` object, or a hand-written index signature,
- * adds. Useful where parsing has to tolerate an unknown field but a caller
- * reading one should be a compile error rather than `unknown`.
+ * Strips `{ [k: string]: unknown }` at every level of a plain data shape -- the
+ * signature a zod `loose()` object, or a hand-written index signature, adds.
+ *
+ * Useful where parsing has to tolerate an unknown field but a caller reading
+ * one should be a compile error rather than `unknown`.
  *
  * A type whose only keys *are* an index signature is a map somebody asked for,
  * so its values are cleaned and its keys kept; emptying it would leave `{}`,

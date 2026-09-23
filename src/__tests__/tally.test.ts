@@ -199,6 +199,13 @@ describe('the shipped patterns', () => {
     ['src/main/kotlin/App.kt', 'source'],
     ['client/src/lib/__tests__/storage.test.ts', 'tests'],
     ['playwright/e2e/tasks.spec.ts', 'tests'],
+    // Everything scripted in an e2e folder, not just the specs.
+    ['playwright/pages/login-page.ts', 'tests'],
+    ['apps/web/playwright/components/Harness.tsx', 'tests'],
+    ['cypress/support/commands.js', 'tests'],
+    ['cypress/e2e/login.cy.ts', 'tests'],
+    // Only the scripts: a fixture's data is still config.
+    ['cypress/fixtures/user.json', 'config'],
     ['pkg/thing_test.go', 'tests'],
     ['src/test/java/AppTest.java', 'tests'],
     ['tests/conftest.py', 'tests'],

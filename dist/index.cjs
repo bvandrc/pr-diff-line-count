@@ -49813,6 +49813,10 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.spec.*",
     "**/*_test.*",
     "**/*_spec.*",
+    // JavaScript and TypeScript -- e2e suites, whose helpers and page objects
+    // carry no `.spec` suffix
+    "**/playwright/**/*.{ts,tsx,js,jsx}",
+    "**/cypress/**/*.{ts,tsx,js,jsx}",
     // Python
     "**/test_*.py",
     "**/conftest.py",

@@ -15,16 +15,15 @@ The comment, and the summary table with it:
 <table>
 <tr><td>
 
-<table>
-<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comments</th></tr>
-<tr><td></td><th align="center">+</th><th align="center">~</th><th align="center">−</th><th align="center">+</th><th align="center">−</th></tr>
-<tr><td><strong>Source</strong></td><td align="right"><strong>91</strong></td><td align="right"><strong>68</strong></td><td align="right"><strong>9</strong></td><td align="right">106</td><td align="right">42</td></tr>
-<tr><td>Tests</td><td align="right">12</td><td align="right">0</td><td align="right">0</td><td align="right">4</td><td align="right">0</td></tr>
-<tr><td>Docs</td><td align="right">6</td><td align="right">0</td><td align="right">0</td><td align="right">0</td><td align="right">0</td></tr>
-<tr><td>Config</td><td align="right">8</td><td align="right">0</td><td align="right">0</td><td align="right">0</td><td align="right">0</td></tr>
-<tr><td><strong>Total</strong></td><td align="right">117</td><td align="right">68</td><td align="right">9</td><td align="right">110</td><td align="right">42</td></tr>
-<tr><td colspan="6" align="center"><em>GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144</em></td></tr>
-</table>
+|  | ${\color{#2da44e}+}$ code | ${\color{#bf8700}\sim}$ code | ${\color{#e5534b}-}$ code | ${\color{#2da44e}+}$ comment | ${\color{#e5534b}-}$ comment |
+| --- | --: | --: | --: | --: | --: |
+| <strong>Source</strong> | ${\color{#2da44e}\mathbf{91}}$ | ${\color{#bf8700}\mathbf{68}}$ | ${\color{#e5534b}\mathbf{9}}$ | ${\color{#2da44e}106}$ | ${\color{#e5534b}42}$ |
+| Tests | ${\color{#2da44e}12}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}4}$ | ${\color{#e5534b}0}$ |
+| Docs | ${\color{#2da44e}6}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}0}$ | ${\color{#e5534b}0}$ |
+| Config | ${\color{#2da44e}8}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}0}$ | ${\color{#e5534b}0}$ |
+| <strong>Total</strong> | ${\color{#2da44e}117}$ | ${\color{#bf8700}68}$ | ${\color{#e5534b}9}$ | ${\color{#2da44e}110}$ | ${\color{#e5534b}42}$ |
+
+<em>GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144</em>
 
 <sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.<br>Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above:&nbsp;+34&nbsp;/&nbsp;−25.</sub>
 
@@ -96,6 +95,7 @@ CI here runs that path on every pull request, under `contents: read` alone, so i
 | --- | --- | --- |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. Needs `pull-requests: write`. |
 | `comment` | `true` | Post the table as a sticky comment. Set `false` to use only the outputs and job summary. |
+| `color-counts` | `true` | Colour the counts by the kind of change. Set `false` to keep them as plain text. |
 | `base-sha` | the PR's base | Revision to count from. The merge base of the two is what gets counted. |
 | `head-sha` | the PR's head | Revision to count to. |
 
@@ -104,6 +104,14 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
 ## Reading the table
 
 - **`+ code` / `− code`** — lines added and removed, excluding comments and blank lines.
+- **Colors**
+  - Each count, and the sign heading its column, reads in the colour of its kind of change:
+    - **green** — lines added
+    - **amber** — lines changed in place
+    - **red** — lines removed
+  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX maths — the one thing it will colour. They still select and copy as their own digits.
+  - Maths takes no theme, so a colour cannot follow light and dark. The three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
+  - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no maths.
 - **`~ code`** — lines changed in place. cloc counts a changed line once, rather than as an add plus a delete, which is why these columns don't sum to GitHub's own `+/−`.
 - **`+ comment` / `− comment`** — comment lines, parsed per language. The headline deliberately leaves them out.
 - Blank lines are counted but kept to a footnote.

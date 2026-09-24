@@ -49990,10 +49990,6 @@ function tallyDiff(report, globs) {
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 var bold = (content) => `<strong>${content}</strong>`;
 var italic = (content) => `<em>${content}</em>`;
-var attrsStr = (attrs) => Object.entries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
-var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
-var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
-var tr = (cells) => `<tr>${cells}</tr>`;
 
 // src/markdown.ts
 var CATEGORY_LABELS = {
@@ -50003,9 +49999,17 @@ var CATEGORY_LABELS = {
   docs: "Docs",
   config: "Config"
 };
-var COLUMN_GROUPS = [
-  { label: "code", signs: ["+", "~", "\u2212"] },
-  { label: "comments", signs: ["+", "\u2212"] }
+var CHANGE_KIND_COLUMNS = {
+  added: { sign: "+", maths: "+", colour: "#2da44e" },
+  modified: { sign: "~", maths: "\\sim", colour: "#bf8700" },
+  removed: { sign: "\u2212", maths: "-", colour: "#e5534b" }
+};
+var COUNT_COLUMNS = [
+  ...CHANGE_KINDS.map((kind) => ({ kind, count: "code" })),
+  ...["added", "removed"].map((kind) => ({
+    kind,
+    count: "comment"
+  }))
 ];
 var githubDiffTotalsSchema = external_exports.object({
   additions: external_exports.number(),
@@ -50024,17 +50028,32 @@ var linesChangedStr = ({
     `\u2212${removed}`
   ].filter(Boolean).join(" / ")}`
 );
-var COLUMN_COUNT = 1 + sum(COLUMN_GROUPS.map(({ signs }) => signs.length));
-var row = (label, tally, { boldCode = false } = {}) => [
-  td(label),
-  ...[tally.added, tally.modified, tally.removed].map(
-    ({ code: count }) => td(boldCode ? bold(count) : count, { align: "right" })
-  ),
-  ...[tally.added, tally.removed].map(
-    ({ comment: count }) => td(count, { align: "right" })
+var mdRow = (cells) => `| ${cells.join(" | ")} |`;
+var colouredMaths = (colour, body) => `\${\\color{${colour}}${body}}$`;
+var countCell = (kind, count, { emphasise = false, colour }) => {
+  if (!colour) return emphasise ? bold(count) : `${count}`;
+  return colouredMaths(
+    CHANGE_KIND_COLUMNS[kind].colour,
+    emphasise ? `\\mathbf{${count}}` : count
+  );
+};
+var headerCell = ({ kind, count }, { colour }) => {
+  const { sign, maths, colour: kindColour } = CHANGE_KIND_COLUMNS[kind];
+  return `${colour ? colouredMaths(kindColour, maths) : sign} ${count}`;
+};
+var row = (label, tally, { boldCode = false, colour }) => mdRow([
+  label,
+  ...COUNT_COLUMNS.map(
+    ({ kind, count }) => countCell(kind, tally[kind][count], {
+      emphasise: boldCode && count === "code",
+      colour
+    })
   )
-].join("");
-function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
+]);
+function renderMarkdown(tally, {
+  githubTotals: ghTotals,
+  colorCounts = true
+} = {}) {
   const lines = ["### PR Diff Line Count"];
   const shown = FILE_CATEGORIES.filter(
     (category) => hasAnyLine(tally.byCategory[category])
@@ -50047,39 +50066,37 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
   }
   const rows = shown.map(
     (category) => category === "source" ? row(bold(CATEGORY_LABELS.source), tally.byCategory.source, {
-      boldCode: true
-    }) : row(CATEGORY_LABELS[category], tally.byCategory[category])
+      boldCode: true,
+      colour: colorCounts
+    }) : row(CATEGORY_LABELS[category], tally.byCategory[category], {
+      colour: colorCounts
+    })
   );
-  if (shown.length > 1) rows.push(row(bold("Total"), tally.total));
+  if (shown.length > 1)
+    rows.push(row(bold("Total"), tally.total, { colour: colorCounts }));
+  lines.push(
+    [
+      mdRow([
+        "",
+        ...COUNT_COLUMNS.map(
+          (column) => headerCell(column, { colour: colorCounts })
+        )
+      ]),
+      mdRow(["---", ...COUNT_COLUMNS.map(() => "---:")]),
+      ...rows
+    ].join("\n")
+  );
   if (ghTotals)
-    rows.push(
-      td(
-        italic(
-          linesChangedStr({
-            label: "GitHub reports",
-            added: ghTotals.additions,
-            removed: ghTotals.deletions
-          })
-        ),
-        { colspan: COLUMN_COUNT, align: "center" }
+    lines.push(
+      italic(
+        linesChangedStr({
+          label: "GitHub reports",
+          added: ghTotals.additions,
+          removed: ghTotals.deletions
+        })
       )
     );
   lines.push(
-    [
-      "<table>",
-      // label header row
-      tr(
-        td("") + COLUMN_GROUPS.map(
-          ({ label, signs }) => th(label, { colspan: signs.length, align: "center" })
-        ).join("")
-      ),
-      // sign header row
-      tr(
-        td("") + COLUMN_GROUPS.flatMap(({ signs }) => signs).map((sign) => th(sign, { align: "center" })).join("")
-      ),
-      ...rows.map(tr),
-      "</table>"
-    ].join("\n"),
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
 ${linesChangedStr({ label: "Blank lines are excluded above:", ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
   );
@@ -50170,7 +50187,8 @@ async function run() {
   const markdown = renderMarkdown(tally, {
     // Present only on the pull_request event. The payload is typed `any`, so the
     // schema is what checks it -- and strips the other ~50 keys.
-    githubTotals: githubDiffTotalsSchema.safeParse(pullRequest).data
+    githubTotals: githubDiffTotalsSchema.safeParse(pullRequest).data,
+    colorCounts: getBooleanInput("color-counts")
   });
   setOutput("markdown", markdown);
   setOutput("json", JSON.stringify(tally));

@@ -42,6 +42,7 @@ async function run(): Promise<void> {
     // Present only on the pull_request event. The payload is typed `any`, so the
     // schema is what checks it -- and strips the other ~50 keys.
     githubTotals: githubDiffTotalsSchema.safeParse(pullRequest).data,
+    colorCounts: getBooleanInput('color-counts'),
   })
 
   setOutput('markdown', markdown)

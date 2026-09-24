@@ -7,6 +7,7 @@ import {
   DEFAULT_CATEGORY_GLOBS,
   type DiffTally,
   FILE_CATEGORIES,
+  resolveCategoryGlobs,
   tallyDiff,
 } from '../tally.ts'
 
@@ -288,5 +289,92 @@ describe('the shipped patterns', () => {
     ['MANIFEST.in', 'config'],
   ])('classifies %s as %s', (file, expected) => {
     expect(categoryOf(file)).toBe(expected)
+  })
+})
+
+describe('resolveCategoryGlobs', () => {
+  const EXTRA_TEST_GLOB = '**/fixtures/**'
+  const OWN_GENERATED_GLOBS = ['**/package-lock.json', '**/dist/**']
+
+  const categoryOf = (file: string, globs: CategoryGlobs) => {
+    const tally = tallyDiff(
+      clocReport({ added: { [file]: { code: 1 } } }),
+      globs
+    )
+    return FILE_CATEGORIES.find(
+      (category) => tally.byCategory[category].added.code > 0
+    )
+  }
+
+  it('gives back the shipped defaults when a workflow sets nothing', () => {
+    expect(resolveCategoryGlobs()).toEqual(DEFAULT_CATEGORY_GLOBS)
+  })
+
+  it('replaces one category outright while the rest keep their defaults', () => {
+    const globs = resolveCategoryGlobs({
+      generated: { patterns: OWN_GENERATED_GLOBS },
+    })
+
+    expect(globs).toMatchObject({
+      generated: OWN_GENERATED_GLOBS,
+      // Replacing one category says nothing about the others.
+      tests: DEFAULT_CATEGORY_GLOBS.tests,
+      docs: DEFAULT_CATEGORY_GLOBS.docs,
+      config: DEFAULT_CATEGORY_GLOBS.config,
+    })
+  })
+
+  it('appends extra patterns to the default list', () => {
+    const globs = resolveCategoryGlobs({
+      tests: { extraPatterns: [EXTRA_TEST_GLOB] },
+    })
+
+    expect(globs.tests).toEqual([
+      ...DEFAULT_CATEGORY_GLOBS.tests,
+      EXTRA_TEST_GLOB,
+    ])
+  })
+
+  it('appends extra patterns to a replacing list rather than the default one', () => {
+    const globs = resolveCategoryGlobs({
+      generated: {
+        patterns: OWN_GENERATED_GLOBS,
+        extraPatterns: ['**/*.snap'],
+      },
+    })
+
+    expect(globs.generated).toEqual([...OWN_GENERATED_GLOBS, '**/*.snap'])
+  })
+
+  it('reads an empty list as an unset input, not as an emptied category', () => {
+    // Every input a workflow leaves out arrives as `[]`, so this is the shape
+    // of the common case rather than an edge one.
+    const globs = resolveCategoryGlobs({
+      docs: { patterns: [], extraPatterns: [] },
+    })
+
+    expect(globs.docs).toEqual(DEFAULT_CATEGORY_GLOBS.docs)
+  })
+
+  it('claims a path the extra patterns match', () => {
+    const globs = resolveCategoryGlobs({
+      tests: { extraPatterns: [EXTRA_TEST_GLOB] },
+    })
+
+    // The shipped defaults would have left this in config, as `**/*.json`.
+    expect(categoryOf('src/fixtures/user.json', globs)).toBe('tests')
+  })
+
+  it('lets an extra `!` pattern negate a default glob without restating the list', () => {
+    const globs = resolveCategoryGlobs({
+      generated: { extraPatterns: ['!**/migrations/**'] },
+    })
+
+    // Hand-written migrations: out of generated, and nothing else claims them.
+    expect(categoryOf('db/migrations/0007_add_schedule.sql', globs)).toBe(
+      'source'
+    )
+    // The rest of the category is untouched.
+    expect(categoryOf('package-lock.json', globs)).toBe('generated')
   })
 })

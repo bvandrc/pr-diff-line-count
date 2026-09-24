@@ -247,8 +247,10 @@ CI here runs that path on every pull request, under `contents: read` alone, so i
 | `color-counts` | `true` | Color the counts by the kind of change. Set `false` to keep them as plain text. |
 | `base-sha` | the PR's base | Revision to count from. The merge base of the two is what gets counted. |
 | `head-sha` | the PR's head | Revision to count to. |
+| `<category>-patterns` | the built-in list | Globs deciding what counts as `tests`, `generated`, `docs`, or `config`, replacing that category's built-in list. See [Configuring the categories](#configuring-the-categories). |
+| `extra-<category>-patterns` | none | Globs added to whichever list is in force, `!`-prefixed to take paths back out of it. |
 
-Set both to run outside a `pull_request` event. The comment is skipped when there's no pull request to post it to.
+Set both `base-sha` and `head-sha` to run outside a `pull_request` event. The comment is skipped when there's no pull request to post it to.
 
 ## Reading the table
 
@@ -280,7 +282,41 @@ Languages covered by name: JavaScript/TypeScript, Python, Java/Kotlin, C/C++, C#
 
 The categories are matched **in the order above** and the **first match wins** (i.e., a `.spec` file under a generated directory is still counted as a test). **source** is last because it is the fallback, which also means an unfamiliar language or an extensionless file is counted rather than quietly dropped.
 
-The patterns are **not configurable yet** — every repo gets the same list, which keeps the numbers comparable between them. They live in `DEFAULT_CATEGORY_GLOBS` in `src/tally.ts`. Making them overridable is [issue #5](https://github.com/bvandrc/pr-diff-line-count/issues/5).
+The built-in lists live in `DEFAULT_CATEGORY_GLOBS` in `src/tally.ts`, and a workflow that sets none of the pattern inputs gets exactly those — which is what keeps a count comparable with another repo's.
+
+## Configuring the categories
+
+Each of the four non-source categories takes two inputs, so a repo whose conventions differ can say so:
+
+- **`<category>-patterns`** replaces that category's list outright.
+- **`extra-<category>-patterns`** adds to whichever list is in force — the built-in one, or a replacement set in the same step.
+
+```yaml
+steps:
+  - uses: bvandrc/pr-diff-line-count@v1
+    with:
+      # `fixtures/` here is test data, not source.
+      extra-tests-patterns: |
+        **/fixtures/**
+        **/*.fixture.*
+
+      # Migrations in this repo are written by hand, so they are not generated.
+      extra-generated-patterns: |
+        !**/migrations/**
+
+      # Only these two count as generated, whatever the built-in list says.
+      generated-patterns: |
+        **/package-lock.json
+        **/dist/**
+```
+
+**One glob per line.** A comma is never a separator, because a brace glob (`**/*.{js,ts}`) contains one — a comma-joined line would match nothing and the files would quietly land in **source**.
+
+**A `!` glob subtracts.** It drops the paths it matches back out of that category, which is how one built-in glob is narrowed without restating the other forty. A path taken out of a category is then offered to the categories after it, and lands in **source** if none claims it.
+
+The categories are still matched in the order above, so an `extra-tests-patterns` glob beats anything `generated` would have claimed, and a `config` one is reached only for a path the first three passed over.
+
+Overriding a category is logged in the run, since two repos counting by different globs produce numbers that can't be compared against each other.
 
 ## Outputs
 

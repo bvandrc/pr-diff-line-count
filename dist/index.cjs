@@ -25449,6 +25449,13 @@ function getInput(name, options) {
   }
   return val.trim();
 }
+function getMultilineInput(name, options) {
+  const inputs = getInput(name, options).split("\n").filter((x) => x !== "");
+  if (options && options.trimWhitespace === false) {
+    return inputs;
+  }
+  return inputs.map((input2) => input2.trim());
+}
 function getBooleanInput(name, options) {
   const trueValue = ["true", "True", "TRUE"];
   const falseValue = ["false", "False", "FALSE"];
@@ -29647,6 +29654,65 @@ function getOctokit(token, options, ...additionalPlugins) {
   return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/difference.mjs
+function difference(firstArr, secondArr) {
+  const secondSet = new Set(secondArr);
+  return firstArr.filter((item) => !secondSet.has(item));
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/partition.mjs
+function partition(arr, isInTruthy) {
+  const truthy = [];
+  const falsy = [];
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (isInTruthy(item, i, arr)) truthy.push(item);
+    else falsy.push(item);
+  }
+  return [truthy, falsy];
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/without.mjs
+function without(array2, ...values) {
+  return difference(array2, values);
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/zipObject.mjs
+function zipObject(keys, values) {
+  const result = {};
+  for (let i = 0; i < keys.length; i++) result[keys[i]] = values[i];
+  return result;
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/math/sum.mjs
+function sum(nums) {
+  let result = 0;
+  for (let i = 0; i < nums.length; i++) result += nums[i];
+  return result;
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/mapValues.mjs
+function mapValues(object2, getNewValue) {
+  const result = {};
+  const keys = Object.keys(object2);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const value = object2[key];
+    result[key] = getNewValue(value, key, object2);
+  }
+  return result;
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/pick.mjs
+function pick(obj, keys) {
+  const result = {};
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    if (Object.hasOwn(obj, key)) result[key] = obj[key];
+  }
+  return result;
+}
+
 // src/cloc/run.ts
 var import_promises2 = require("node:fs/promises");
 
@@ -30291,7 +30357,7 @@ __export(util_exports, {
   own: () => own,
   parsedType: () => parsedType,
   partial: () => partial,
-  pick: () => pick,
+  pick: () => pick2,
   prefixIssues: () => prefixIssues,
   primitiveTypes: () => primitiveTypes,
   promiseAllObject: () => promiseAllObject,
@@ -30686,7 +30752,7 @@ var BIGINT_FORMAT_RANGES = {
   int64: [/* @__PURE__ */ BigInt("-9223372036854775808"), /* @__PURE__ */ BigInt("9223372036854775807")],
   uint64: [/* @__PURE__ */ BigInt(0), /* @__PURE__ */ BigInt("18446744073709551615")]
 };
-function pick(schema, mask) {
+function pick2(schema, mask) {
   const currDef = schema._zod.def;
   const checks = currDef.checks;
   const hasChecks = checks && checks.length > 0;
@@ -49733,68 +49799,14 @@ ${errors.join("\n")}`
   return clocDiffReportSchema.parse(JSON.parse(raw));
 }
 
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/difference.mjs
-function difference(firstArr, secondArr) {
-  const secondSet = new Set(secondArr);
-  return firstArr.filter((item) => !secondSet.has(item));
-}
-
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/partition.mjs
-function partition(arr, isInTruthy) {
-  const truthy = [];
-  const falsy = [];
-  for (let i = 0; i < arr.length; i++) {
-    const item = arr[i];
-    if (isInTruthy(item, i, arr)) truthy.push(item);
-    else falsy.push(item);
-  }
-  return [truthy, falsy];
-}
-
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/without.mjs
-function without(array2, ...values) {
-  return difference(array2, values);
-}
-
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/zipObject.mjs
-function zipObject(keys, values) {
-  const result = {};
-  for (let i = 0; i < keys.length; i++) result[keys[i]] = values[i];
-  return result;
-}
-
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/math/sum.mjs
-function sum(nums) {
-  let result = 0;
-  for (let i = 0; i < nums.length; i++) result += nums[i];
-  return result;
-}
-
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/mapValues.mjs
-function mapValues(object2, getNewValue) {
-  const result = {};
-  const keys = Object.keys(object2);
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const value = object2[key];
-    result[key] = getNewValue(value, key, object2);
-  }
-  return result;
-}
-
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/object/pick.mjs
-function pick2(obj, keys) {
-  const result = {};
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    if (Object.hasOwn(obj, key)) result[key] = obj[key];
-  }
-  return result;
-}
-
 // src/tally.ts
 var import_picomatch = __toESM(require_picomatch2(), 1);
-var NON_SOURCE_CATEGORIES = ["tests", "generated", "docs", "config"];
+var NON_SOURCE_CATEGORIES = [
+  "tests",
+  "generated",
+  "docs",
+  "config"
+];
 var FILE_CATEGORIES = ["source", ...NON_SOURCE_CATEGORIES];
 var CONFIG_TXT_GLOBS = [
   // Python
@@ -49954,6 +49966,16 @@ var DEFAULT_CATEGORY_GLOBS = {
     "**/*.tfvars"
   ]
 };
+function resolveCategoryGlobs(overrides = {}) {
+  return zipObject(
+    [...NON_SOURCE_CATEGORIES],
+    NON_SOURCE_CATEGORIES.map((category) => {
+      const { patterns, extraPatterns = [] } = overrides[category] ?? {};
+      const base = patterns?.length ? patterns : DEFAULT_CATEGORY_GLOBS[category];
+      return [...base, ...extraPatterns];
+    })
+  );
+}
 var NON_FILE_KEYS = /* @__PURE__ */ new Set(["SUM", "header"]);
 var COUNT_FIELDS = ["code", "comment", "blank"];
 var emptyCounts = () => zipObject(
@@ -50163,7 +50185,7 @@ function renderMarkdown(tally, {
   );
   lines.push(
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-${linesChangedStr({ label: "Blank lines are excluded above:", color: colorCounts, ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
+${linesChangedStr({ label: "Blank lines are excluded above:", color: colorCounts, ...mapValues(pick(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
   );
   return lines.join("\n\n");
 }
@@ -50204,7 +50226,7 @@ async function postStickyComment({
     return;
   }
   const octokit = getOctokit(token);
-  const repo = pick2(context2.repo, ["owner", "repo"]);
+  const repo = pick(context2.repo, ["owner", "repo"]);
   const issue_number = pullRequest.number;
   const existing = await octokit.paginate(octokit.rest.issues.listComments, {
     ...repo,
@@ -50236,6 +50258,26 @@ ${MARKER}`;
 }
 
 // src/index.ts
+function readCategoryGlobOverrides() {
+  return zipObject(
+    [...NON_SOURCE_CATEGORIES],
+    NON_SOURCE_CATEGORIES.map((category) => ({
+      patterns: getMultilineInput(`${category}-patterns`),
+      extraPatterns: getMultilineInput(`extra-${category}-patterns`)
+    }))
+  );
+}
+function logCategoryGlobOverrides(overrides) {
+  for (const category of NON_SOURCE_CATEGORIES) {
+    const { patterns = [], extraPatterns = [] } = overrides[category] ?? {};
+    if (patterns.length)
+      info(
+        `Category "${category}": default patterns replaced by ${patterns.length}.`
+      );
+    if (extraPatterns.length)
+      info(`Category "${category}": ${extraPatterns.length} extra pattern(s).`);
+  }
+}
 async function run() {
   const pullRequest = context2.payload.pull_request;
   const { baseSha, headSha } = await resolveShaRange({
@@ -50243,12 +50285,14 @@ async function run() {
     head: getInput("head-sha") || pullRequest?.head?.sha
   });
   info(`Counting ${baseSha}..${headSha}`);
+  const globOverrides = readCategoryGlobOverrides();
+  logCategoryGlobOverrides(globOverrides);
   const report = await runClocDiff({
     baseSha,
     headSha,
     reportPath: (0, import_node_path2.join)((0, import_node_os.tmpdir)(), "pr-diff-line-count.json")
   });
-  const tally = tallyDiff(report, DEFAULT_CATEGORY_GLOBS);
+  const tally = tallyDiff(report, resolveCategoryGlobs(globOverrides));
   const markdown = renderMarkdown(tally, {
     // Present only on the pull_request event. The payload is typed `any`, so the
     // schema is what checks it -- and strips the other ~50 keys.

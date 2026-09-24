@@ -16,7 +16,13 @@ import {
   type ClocDiffReport,
 } from './cloc/run.ts'
 
-const NON_SOURCE_CATEGORIES = ['tests', 'generated', 'docs', 'config'] as const
+export const NON_SOURCE_CATEGORIES = [
+  'tests',
+  'generated',
+  'docs',
+  'config',
+] as const
+export type NonSourceCategory = (typeof NON_SOURCE_CATEGORIES)[number]
 
 export const FILE_CATEGORIES = ['source', ...NON_SOURCE_CATEGORIES] as const
 export type FileCategory = (typeof FILE_CATEGORIES)[number]
@@ -28,10 +34,7 @@ export type FileCategory = (typeof FILE_CATEGORIES)[number]
  * a path the rest of its category matched, which is how a broad extension keeps
  * the exceptions that are not really that kind.
  */
-export type CategoryGlobs = Record<
-  (typeof NON_SOURCE_CATEGORIES)[number],
-  string[]
->
+export type CategoryGlobs = Record<NonSourceCategory, string[]>
 
 export type CategoryTally = Record<ChangeKind, ClocCounts>
 
@@ -64,10 +67,10 @@ const CONFIG_TXT_GLOBS = [
 const excluding = (globs: string[]) => globs.map((glob) => `!${glob}`)
 
 /**
- * The globs each category is decided by.
+ * The globs each category is decided by, before a workflow says otherwise.
  *
- * Not configurable yet -- a workflow gets these or nothing, which keeps the
- * categories comparable across repos until someone needs otherwise.
+ * A workflow that leaves every pattern input unset gets exactly these, which is
+ * what keeps a count comparable with another repo's.
  */
 export const DEFAULT_CATEGORY_GLOBS = {
   tests: [
@@ -213,6 +216,50 @@ export const DEFAULT_CATEGORY_GLOBS = {
     '**/*.tfvars',
   ],
 } as const satisfies CategoryGlobs
+
+/**
+ * One category's globs as a workflow asked for them.
+ *
+ * Both fields are optional and independent: a category can be replaced,
+ * extended, or both at once.
+ */
+export type CategoryGlobOverride = {
+  /** Replaces the built-in list outright. Empty or absent keeps it. */
+  patterns?: string[]
+  /**
+   * Added to whichever list is in force. A `!`-prefixed glob drops the paths it
+   * matches back out of the category, which is how a built-in glob is narrowed
+   * without restating the rest of the list.
+   */
+  extraPatterns?: string[]
+}
+
+export type CategoryGlobOverrides = Partial<
+  Record<NonSourceCategory, CategoryGlobOverride>
+>
+
+/**
+ * The globs to count with, once a workflow's overrides are folded in.
+ *
+ * Every category is present, falling back to {@link DEFAULT_CATEGORY_GLOBS}
+ * wherever a workflow said nothing.
+ */
+export function resolveCategoryGlobs(
+  overrides: CategoryGlobOverrides = {}
+): CategoryGlobs {
+  return zipObject(
+    [...NON_SOURCE_CATEGORIES],
+    NON_SOURCE_CATEGORIES.map((category) => {
+      const { patterns, extraPatterns = [] } = overrides[category] ?? {}
+      // An input a workflow left out arrives as an empty list, not as absent,
+      // so length is what tells a replacement from silence.
+      const base = patterns?.length
+        ? patterns
+        : DEFAULT_CATEGORY_GLOBS[category]
+      return [...base, ...extraPatterns]
+    })
+  )
+}
 
 // cloc mixes these sibling keys in among the per-file entries.
 const NON_FILE_KEYS = new Set(['SUM', 'header'])

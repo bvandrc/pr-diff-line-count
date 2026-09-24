@@ -23,6 +23,42 @@ inputs:
     description: Revision to count to. Defaults to the pull request's head.
     default: ''
 
+  tests-patterns:
+    description: |
+      Globs deciding what counts as tests (`**/*.test.*`, `**/__tests__/**`, `**/test_*.py`, ...), replacing the built-in list outright. One glob per line -- a comma is never a separator, since a brace glob contains one. Leave unset to keep the built-in list.
+    default: ''
+  extra-tests-patterns:
+    description: |
+      Globs added to whichever tests list is in force. Prefix a glob with `!` to drop the paths it matches back out of the category. One glob per line.
+    default: ''
+
+  generated-patterns:
+    description: |
+      Globs deciding what counts as generated (lockfiles, `**/dist/**`, `**/*.pb.go`, ...), replacing the built-in list outright. One glob per line -- a comma is never a separator, since a brace glob contains one. Leave unset to keep the built-in list.
+    default: ''
+  extra-generated-patterns:
+    description: |
+      Globs added to whichever generated list is in force. Prefix a glob with `!` to drop the paths it matches back out of the category. One glob per line.
+    default: ''
+
+  docs-patterns:
+    description: |
+      Globs deciding what counts as docs (`**/*.md`, `**/docs/**`, `LICENSE*`, ...), replacing the built-in list outright. One glob per line -- a comma is never a separator, since a brace glob contains one. Leave unset to keep the built-in list.
+    default: ''
+  extra-docs-patterns:
+    description: |
+      Globs added to whichever docs list is in force. Prefix a glob with `!` to drop the paths it matches back out of the category. One glob per line.
+    default: ''
+
+  config-patterns:
+    description: |
+      Globs deciding what counts as config (`**/*.json`, `**/.github/**`, `**/Dockerfile*`, ...), replacing the built-in list outright. One glob per line -- a comma is never a separator, since a brace glob contains one. Leave unset to keep the built-in list.
+    default: ''
+  extra-config-patterns:
+    description: |
+      Globs added to whichever config list is in force. Prefix a glob with `!` to drop the paths it matches back out of the category. One glob per line.
+    default: ''
+
 outputs:
   markdown:
     description: The rendered table, for posting somewhere else.

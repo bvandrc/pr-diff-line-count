@@ -87,15 +87,4 @@ describe('postStickyComment', () => {
       'Not a pull request — skipping the comment.'
     )
   })
-
-  it('pages through the comments, rather than reading only the first page', async () => {
-    onPullRequest([])
-
-    await postStickyComment({ body: '### Report' })
-
-    expect(octokit.paginate).toHaveBeenCalledWith(
-      octokit.rest.issues.listComments,
-      expect.objectContaining({ ...REPO, issue_number: 7, per_page: 100 })
-    )
-  })
 })

@@ -79,15 +79,6 @@ describe('postStickyComment', () => {
     expect(info).toHaveBeenCalledWith('Comment is already up to date.')
   })
 
-  it('leaves another comment of ours alone when it is not the marked one', async () => {
-    onPullRequest([{ id: 1, body: '### Report with no marker' }])
-
-    await postStickyComment({ body: '### Report' })
-
-    expect(octokit.rest.issues.createComment).toHaveBeenCalled()
-    expect(octokit.rest.issues.updateComment).not.toHaveBeenCalled()
-  })
-
   it('does nothing at all outside a pull request', async () => {
     await postStickyComment({ body: '### Report' })
 

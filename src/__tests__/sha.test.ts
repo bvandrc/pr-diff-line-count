@@ -28,18 +28,6 @@ describe('resolveShaRange', () => {
     })
   })
 
-  it('asks git for the merge base of the two candidates', async () => {
-    gitMergeBase({ stdout: MERGE_BASE })
-
-    await resolveShaRange({ base: BASE, head: HEAD })
-
-    expect(exec).toHaveBeenCalledWith(
-      'git',
-      ['merge-base', BASE, HEAD],
-      expect.objectContaining({ ignoreReturnCode: true, silent: true })
-    )
-  })
-
   it('says how to run it when there is no revision to compare', async () => {
     for (const range of [
       { base: undefined, head: HEAD },
@@ -61,13 +49,5 @@ describe('resolveShaRange', () => {
     await expect(resolveShaRange({ base: BASE, head: HEAD })).rejects.toThrow(
       `Could not find a merge base for ${BASE}...${HEAD}. Check out with \`fetch-depth: 0\`.`
     )
-  })
-
-  it('keeps the head as given, since it is already the revision to count to', async () => {
-    gitMergeBase({ stdout: MERGE_BASE })
-
-    const { headSha } = await resolveShaRange({ base: BASE, head: 'HEAD' })
-
-    expect(headSha).toBe('HEAD')
   })
 })

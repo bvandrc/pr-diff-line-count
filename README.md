@@ -170,10 +170,14 @@ ${\color{#2da44e}110}$
 ${\color{#e5534b}42}$
 
 </td></tr>
-<tr><td colspan="6" align="center"><em>GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144</em></td></tr>
+<tr><td colspan="6" align="center">
+
+<em>GitHub&nbsp;reports ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$</em>
+
+</td></tr>
 </table>
 
-<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.<br>Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above:&nbsp;+34&nbsp;/&nbsp;−25.</sub>
+<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's. Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
 
 ## Usage
 

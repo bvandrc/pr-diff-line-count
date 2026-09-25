@@ -13,23 +13,171 @@ The result comes back three ways:
 The comment, and the summary table with it:
 
 <table>
-<tr><td>
+<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
+<tr><td></td>
+<td align="center">
 
-<table>
-<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comments</th></tr>
-<tr><td></td><th align="center">+</th><th align="center">~</th><th align="center">−</th><th align="center">+</th><th align="center">−</th></tr>
-<tr><td><strong>Source</strong></td><td align="right"><strong>91</strong></td><td align="right"><strong>68</strong></td><td align="right"><strong>9</strong></td><td align="right">106</td><td align="right">42</td></tr>
-<tr><td>Tests</td><td align="right">12</td><td align="right">0</td><td align="right">0</td><td align="right">4</td><td align="right">0</td></tr>
-<tr><td>Docs</td><td align="right">6</td><td align="right">0</td><td align="right">0</td><td align="right">0</td><td align="right">0</td></tr>
-<tr><td>Config</td><td align="right">8</td><td align="right">0</td><td align="right">0</td><td align="right">0</td><td align="right">0</td></tr>
-<tr><td><strong>Total</strong></td><td align="right">117</td><td align="right">68</td><td align="right">9</td><td align="right">110</td><td align="right">42</td></tr>
-<tr><td colspan="6" align="center"><em>GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144</em></td></tr>
-</table>
+${\color{#2da44e}+}$
 
-<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.<br>Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above:&nbsp;+34&nbsp;/&nbsp;−25.</sub>
+</td>
+<td align="center">
+
+${\color{#bf8700}\sim}$
+
+</td>
+<td align="center">
+
+${\color{#e5534b}-}$
+
+</td>
+<td align="center">
+
+${\color{#2da44e}+}$
+
+</td>
+<td align="center">
+
+${\color{#e5534b}-}$
+
+</td></tr>
+<tr><td><strong>Source</strong></td>
+<td align="right">
+
+${\color{#2da44e}\mathbf{91}}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}\mathbf{68}}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}\mathbf{9}}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}106}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}42}$
+
+</td></tr>
+<tr><td>Tests</td>
+<td align="right">
+
+${\color{#2da44e}12}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}4}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td></tr>
+<tr><td>Docs</td>
+<td align="right">
+
+${\color{#2da44e}6}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td></tr>
+<tr><td>Config</td>
+<td align="right">
+
+${\color{#2da44e}8}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td></tr>
+<tr><td><strong>Total</strong></td>
+<td align="right">
+
+${\color{#2da44e}117}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}68}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}9}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}110}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}42}$
+
+</td></tr>
+<tr><td colspan="6" align="center">
+
+<em>GitHub reports</em> ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$
 
 </td></tr>
 </table>
+
+<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's. Blank lines are excluded above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
 
 ## Usage
 
@@ -96,6 +244,7 @@ CI here runs that path on every pull request, under `contents: read` alone, so i
 | --- | --- | --- |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. Needs `pull-requests: write`. |
 | `comment` | `true` | Post the table as a sticky comment. Set `false` to use only the outputs and job summary. |
+| `color-counts` | `true` | Color the counts by the kind of change. Set `false` to keep them as plain text. |
 | `base-sha` | the PR's base | Revision to count from. The merge base of the two is what gets counted. |
 | `head-sha` | the PR's head | Revision to count to. |
 
@@ -104,6 +253,15 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
 ## Reading the table
 
 - **`+ code` / `− code`** — lines added and removed, excluding comments and blank lines.
+- **Colors**
+  - Each count, and the sign heading its column, reads in the color of its kind of change:
+    - **green** — lines added
+    - **amber** — lines changed in place
+    - **red** — lines removed
+    - **gray** — a zero, in whichever column it lands: nothing was added, changed, or removed, so it claims none of the three
+  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. Keeping the spanning `code` / `comment` header needs an HTML table, since a markdown table has no `colspan`, and a colored cell there has to be opened out over its own lines for its LaTeX to be read as LaTeX rather than as its own source. That is why the rendered output is several times the size of the table it draws.
+  - LaTeX takes no theme, so a color cannot follow light and dark. All four are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
+  - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
 - **`~ code`** — lines changed in place. cloc counts a changed line once, rather than as an add plus a delete, which is why these columns don't sum to GitHub's own `+/−`.
 - **`+ comment` / `− comment`** — comment lines, parsed per language. The headline deliberately leaves them out.
 - Blank lines are counted but kept to a footnote.

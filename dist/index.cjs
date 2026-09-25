@@ -49733,6 +49733,12 @@ ${errors.join("\n")}`
   return clocDiffReportSchema.parse(JSON.parse(raw));
 }
 
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/difference.mjs
+function difference(firstArr, secondArr) {
+  const secondSet = new Set(secondArr);
+  return firstArr.filter((item) => !secondSet.has(item));
+}
+
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/partition.mjs
 function partition(arr, isInTruthy) {
   const truthy = [];
@@ -49743,6 +49749,11 @@ function partition(arr, isInTruthy) {
     else falsy.push(item);
   }
   return [truthy, falsy];
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/without.mjs
+function without(array2, ...values) {
+  return difference(array2, values);
 }
 
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/zipObject.mjs
@@ -49987,13 +49998,19 @@ function tallyDiff(report, globs) {
 }
 
 // src/utils/index.ts
+var typedEntries = (o) => Object.entries(o);
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 var bold = (content) => `<strong>${content}</strong>`;
 var italic = (content) => `<em>${content}</em>`;
-var attrsStr = (attrs) => Object.entries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
+var attrsStr = (attrs) => typedEntries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
 var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
 var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
 var tr = (cells) => `<tr>${cells}</tr>`;
+var betweenBlankLines = (content) => `
+
+${content}
+
+`;
 
 // src/markdown.ts
 var CATEGORY_LABELS = {
@@ -50003,38 +50020,91 @@ var CATEGORY_LABELS = {
   docs: "Docs",
   config: "Config"
 };
+var CHANGE_KIND_COLUMNS = {
+  added: {
+    sign: "+",
+    latex: "+",
+    color: "#2da44e"
+    // green
+  },
+  modified: {
+    sign: "~",
+    latex: "\\sim",
+    color: "#bf8700"
+    // amber
+  },
+  removed: {
+    sign: "\u2212",
+    latex: "-",
+    color: "#e5534b"
+    // red
+  }
+};
 var COLUMN_GROUPS = [
-  { label: "code", signs: ["+", "~", "\u2212"] },
-  { label: "comments", signs: ["+", "\u2212"] }
+  { count: "code", kinds: CHANGE_KINDS },
+  { count: "comment", kinds: without(CHANGE_KINDS, "modified") }
 ];
+var COUNT_COLUMNS = COLUMN_GROUPS.flatMap(
+  ({ count, kinds }) => kinds.map((kind) => ({ kind, count }))
+);
+var COLUMN_COUNT = 1 + COUNT_COLUMNS.length;
 var githubDiffTotalsSchema = external_exports.object({
   additions: external_exports.number(),
   deletions: external_exports.number()
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
+var ZERO_COLOR = "#848d97";
+var countColor = (kind, count) => count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[kind].color;
+var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
+var boldLatex = (body) => `\\mathbf{${body}}`;
+var signedCount = (kind, count, { color }) => {
+  const { sign, latex } = CHANGE_KIND_COLUMNS[kind];
+  return color ? coloredLatex(countColor(kind, count), `${latex}${count}`) : `${sign}${count}`;
+};
 var linesChangedStr = ({
   label,
   added,
   modified,
-  removed
-}) => unbreakable(
-  `${label} ${[
-    `+${added}`,
-    modified === void 0 ? "" : `~${modified}`,
-    `\u2212${removed}`
-  ].filter(Boolean).join(" / ")}`
+  removed,
+  color = false
+}) => {
+  const counts = [
+    signedCount("added", added, { color }),
+    modified === void 0 ? "" : signedCount("modified", modified, { color }),
+    signedCount("removed", removed, { color })
+  ].filter(Boolean).join(" / ");
+  return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`);
+};
+var countCell = (kind, count, { emphasise = false, color }) => td(
+  color ? betweenBlankLines(
+    coloredLatex(
+      countColor(kind, count),
+      emphasise ? boldLatex(count) : count
+    )
+  ) : emphasise ? bold(count) : count,
+  { align: "right" }
 );
-var COLUMN_COUNT = 1 + sum(COLUMN_GROUPS.map(({ signs }) => signs.length));
-var row = (label, tally, { boldCode = false } = {}) => [
+var signCell = (kind, { color }) => {
+  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
+  return td(color ? betweenBlankLines(coloredLatex(kindColor, latex)) : sign, {
+    align: "center"
+  });
+};
+var row = (label, tally, { boldCode = false, color }) => [
   td(label),
-  ...[tally.added, tally.modified, tally.removed].map(
-    ({ code: count }) => td(boldCode ? bold(count) : count, { align: "right" })
-  ),
-  ...[tally.added, tally.removed].map(
-    ({ comment: count }) => td(count, { align: "right" })
+  ...COUNT_COLUMNS.map(
+    ({ kind, count }) => countCell(kind, tally[kind][count], {
+      emphasise: boldCode && count === "code",
+      color
+    })
   )
-].join("");
-function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
+  // A cell opened out over its own lines has to close before the next one
+  // starts, so the cells of a row go one per line rather than end to end.
+].join("\n");
+function renderMarkdown(tally, {
+  githubTotals: ghTotals,
+  colorCounts = true
+} = {}) {
   const lines = ["### PR Diff Line Count"];
   const shown = FILE_CATEGORIES.filter(
     (category) => hasAnyLine(tally.byCategory[category])
@@ -50045,43 +50115,55 @@ function renderMarkdown(tally, { githubTotals: ghTotals } = {}) {
     );
     return lines.join("\n\n");
   }
-  const rows = shown.map(
-    (category) => category === "source" ? row(bold(CATEGORY_LABELS.source), tally.byCategory.source, {
-      boldCode: true
-    }) : row(CATEGORY_LABELS[category], tally.byCategory[category])
-  );
-  if (shown.length > 1) rows.push(row(bold("Total"), tally.total));
-  if (ghTotals)
+  const rows = shown.map((category) => {
+    const isSource = category === "source";
+    const label = CATEGORY_LABELS[category];
+    return row(isSource ? bold(label) : label, tally.byCategory[category], {
+      boldCode: isSource,
+      color: colorCounts
+    });
+  });
+  if (shown.length > 1)
+    rows.push(row(bold("Total"), tally.total, { color: colorCounts }));
+  if (ghTotals) {
+    const reported = linesChangedStr({
+      label: italic("GitHub reports"),
+      added: ghTotals.additions,
+      removed: ghTotals.deletions,
+      color: colorCounts
+    });
     rows.push(
-      td(
-        italic(
-          linesChangedStr({
-            label: "GitHub reports",
-            added: ghTotals.additions,
-            removed: ghTotals.deletions
-          })
-        ),
-        { colspan: COLUMN_COUNT, align: "center" }
-      )
+      td(colorCounts ? betweenBlankLines(reported) : reported, {
+        colspan: COLUMN_COUNT,
+        align: "center"
+      })
     );
+  }
   lines.push(
     [
       "<table>",
-      // label header row
+      // group header row: what each span of sign columns counts
       tr(
         td("") + COLUMN_GROUPS.map(
-          ({ label, signs }) => th(label, { colspan: signs.length, align: "center" })
+          ({ count, kinds }) => th(count, { colspan: kinds.length, align: "center" })
         ).join("")
       ),
-      // sign header row
+      // sign header row, one cell under each column of its group
       tr(
-        td("") + COLUMN_GROUPS.flatMap(({ signs }) => signs).map((sign) => th(sign, { align: "center" })).join("")
+        [
+          td(""),
+          ...COUNT_COLUMNS.map(
+            ({ kind }) => signCell(kind, { color: colorCounts })
+          )
+        ].join("\n")
       ),
       ...rows.map(tr),
       "</table>"
-    ].join("\n"),
+    ].join("\n")
+  );
+  lines.push(
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-${linesChangedStr({ label: "Blank lines are excluded above:", ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
+${linesChangedStr({ label: "Blank lines are excluded above:", color: colorCounts, ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
   );
   return lines.join("\n\n");
 }
@@ -50170,7 +50252,8 @@ async function run() {
   const markdown = renderMarkdown(tally, {
     // Present only on the pull_request event. The payload is typed `any`, so the
     // schema is what checks it -- and strips the other ~50 keys.
-    githubTotals: githubDiffTotalsSchema.safeParse(pullRequest).data
+    githubTotals: githubDiffTotalsSchema.safeParse(pullRequest).data,
+    colorCounts: getBooleanInput("color-counts")
   });
   setOutput("markdown", markdown);
   setOutput("json", JSON.stringify(tally));

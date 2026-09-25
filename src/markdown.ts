@@ -3,7 +3,7 @@
  * summary and the `markdown` output.
  */
 
-import { mapValues, pick, sum } from 'es-toolkit'
+import { mapValues, pick, sum, without } from 'es-toolkit'
 import { z } from 'zod'
 
 import { CHANGE_KINDS, type ChangeKind, type ClocCounts } from './cloc/run.ts'
@@ -60,7 +60,7 @@ const CHANGE_KIND_COLUMNS = {
  */
 const COUNT_COLUMNS = [
   ...CHANGE_KINDS.map((kind) => ({ kind, count: 'code' as const })),
-  ...(['added', 'removed'] as const).map((kind) => ({
+  ...without(CHANGE_KINDS, 'modified').map((kind) => ({
     kind,
     count: 'comment' as const,
   })),
@@ -197,16 +197,15 @@ export function renderMarkdown(
     return lines.join('\n\n')
   }
 
-  const rows = shown.map((category) =>
-    category === 'source'
-      ? row(bold(CATEGORY_LABELS.source), tally.byCategory.source, {
-          boldCode: true,
-          colour: colorCounts,
-        })
-      : row(CATEGORY_LABELS[category], tally.byCategory[category], {
-          colour: colorCounts,
-        })
-  )
+  const rows = shown.map((category) => {
+    // Source is the headline, so its label and its code counts are the bold ones.
+    const isSource = category === 'source'
+    const label = CATEGORY_LABELS[category]
+    return row(isSource ? bold(label) : label, tally.byCategory[category], {
+      boldCode: isSource,
+      colour: colorCounts,
+    })
+  })
   if (shown.length > 1)
     rows.push(row(bold('Total'), tally.total, { colour: colorCounts }))
 

@@ -49733,6 +49733,12 @@ ${errors.join("\n")}`
   return clocDiffReportSchema.parse(JSON.parse(raw));
 }
 
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/difference.mjs
+function difference(firstArr, secondArr) {
+  const secondSet = new Set(secondArr);
+  return firstArr.filter((item) => !secondSet.has(item));
+}
+
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/partition.mjs
 function partition(arr, isInTruthy) {
   const truthy = [];
@@ -49743,6 +49749,11 @@ function partition(arr, isInTruthy) {
     else falsy.push(item);
   }
   return [truthy, falsy];
+}
+
+// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/without.mjs
+function without(array2, ...values) {
+  return difference(array2, values);
 }
 
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/zipObject.mjs
@@ -50006,7 +50017,7 @@ var CHANGE_KIND_COLUMNS = {
 };
 var COUNT_COLUMNS = [
   ...CHANGE_KINDS.map((kind) => ({ kind, count: "code" })),
-  ...["added", "removed"].map((kind) => ({
+  ...without(CHANGE_KINDS, "modified").map((kind) => ({
     kind,
     count: "comment"
   }))
@@ -50064,14 +50075,14 @@ function renderMarkdown(tally, {
     );
     return lines.join("\n\n");
   }
-  const rows = shown.map(
-    (category) => category === "source" ? row(bold(CATEGORY_LABELS.source), tally.byCategory.source, {
-      boldCode: true,
+  const rows = shown.map((category) => {
+    const isSource = category === "source";
+    const label = CATEGORY_LABELS[category];
+    return row(isSource ? bold(label) : label, tally.byCategory[category], {
+      boldCode: isSource,
       colour: colorCounts
-    }) : row(CATEGORY_LABELS[category], tally.byCategory[category], {
-      colour: colorCounts
-    })
-  );
+    });
+  });
   if (shown.length > 1)
     rows.push(row(bold("Total"), tally.total, { colour: colorCounts }));
   lines.push(

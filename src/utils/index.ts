@@ -65,3 +65,14 @@ export const th = (content: string | number, attrs: CellAttrs = {}) =>
 
 /** One table row, from cells already built. */
 export const tr = (cells: string) => `<tr>${cells}</tr>`
+
+/**
+ * Cell content to be read as markdown rather than as the literal text it is.
+ *
+ * The blank lines are the whole trick: one ends the HTML block the table opened,
+ * which puts the parser back in markdown for the content, and the next lets the
+ * table resume. Without them a comment renderer that processes markdown -- and
+ * GitHub is one -- leaves the content alone, since nothing inside an HTML block
+ * is markdown.
+ */
+export const asMarkdown = (content: string | number) => `\n\n${content}\n\n`

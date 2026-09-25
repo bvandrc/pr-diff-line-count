@@ -50006,6 +50006,11 @@ var attrsStr = (attrs) => typedEntries(attrs).map(([name, value]) => ` ${name}="
 var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
 var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
 var tr = (cells) => `<tr>${cells}</tr>`;
+var asMarkdown = (content) => `
+
+${content}
+
+`;
 
 // src/markdown.ts
 var CATEGORY_LABELS = {
@@ -50045,29 +50050,32 @@ var linesChangedStr = ({
   ].filter(Boolean).join(" / ")}`
 );
 var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
-var countCell = (kind, count, { emphasise = false, color }) => {
-  if (!color) return emphasise ? bold(count) : `${count}`;
-  return coloredLatex(
-    CHANGE_KIND_COLUMNS[kind].color,
-    emphasise ? `\\mathbf{${count}}` : count
-  );
-};
+var countCell = (kind, count, { emphasise = false, color }) => td(
+  color ? asMarkdown(
+    coloredLatex(
+      CHANGE_KIND_COLUMNS[kind].color,
+      emphasise ? `\\mathbf{${count}}` : count
+    )
+  ) : emphasise ? bold(count) : count,
+  { align: "right" }
+);
 var signCell = (kind, { color }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
-  return th(color ? coloredLatex(kindColor, latex) : sign, { align: "center" });
+  return th(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
+    align: "center"
+  });
 };
 var row = (label, tally, { boldCode = false, color }) => [
   td(label),
   ...COUNT_COLUMNS.map(
-    ({ kind, count }) => td(
-      countCell(kind, tally[kind][count], {
-        emphasise: boldCode && count === "code",
-        color
-      }),
-      { align: "right" }
-    )
+    ({ kind, count }) => countCell(kind, tally[kind][count], {
+      emphasise: boldCode && count === "code",
+      color
+    })
   )
-].join("");
+  // A cell opened out over its own lines has to end before the next one
+  // starts, so the cells of a row go one per line rather than end to end.
+].join("\n");
 var COLUMN_COUNT = 1 + COUNT_COLUMNS.length;
 function renderMarkdown(tally, {
   githubTotals: ghTotals,
@@ -50117,9 +50125,12 @@ function renderMarkdown(tally, {
       ),
       // sign header row, one cell under each column of its group
       tr(
-        td("") + COUNT_COLUMNS.map(
-          ({ kind }) => signCell(kind, { color: colorCounts })
-        ).join("")
+        [
+          td(""),
+          ...COUNT_COLUMNS.map(
+            ({ kind }) => signCell(kind, { color: colorCounts })
+          )
+        ].join("\n")
       ),
       ...rows.map(tr),
       "</table>"

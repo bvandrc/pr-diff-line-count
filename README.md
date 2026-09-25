@@ -13,23 +13,167 @@ The result comes back three ways:
 The comment, and the summary table with it:
 
 <table>
-<tr><td>
-
-<table>
 <tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
-<tr><td></td><th align="center">${\color{#2da44e}+}$</th><th align="center">${\color{#bf8700}\sim}$</th><th align="center">${\color{#e5534b}-}$</th><th align="center">${\color{#2da44e}+}$</th><th align="center">${\color{#e5534b}-}$</th></tr>
-<tr><td><strong>Source</strong></td><td align="right">${\color{#2da44e}\mathbf{91}}$</td><td align="right">${\color{#bf8700}\mathbf{68}}$</td><td align="right">${\color{#e5534b}\mathbf{9}}$</td><td align="right">${\color{#2da44e}106}$</td><td align="right">${\color{#e5534b}42}$</td></tr>
-<tr><td>Tests</td><td align="right">${\color{#2da44e}12}$</td><td align="right">${\color{#bf8700}0}$</td><td align="right">${\color{#e5534b}0}$</td><td align="right">${\color{#2da44e}4}$</td><td align="right">${\color{#e5534b}0}$</td></tr>
-<tr><td>Docs</td><td align="right">${\color{#2da44e}6}$</td><td align="right">${\color{#bf8700}0}$</td><td align="right">${\color{#e5534b}0}$</td><td align="right">${\color{#2da44e}0}$</td><td align="right">${\color{#e5534b}0}$</td></tr>
-<tr><td>Config</td><td align="right">${\color{#2da44e}8}$</td><td align="right">${\color{#bf8700}0}$</td><td align="right">${\color{#e5534b}0}$</td><td align="right">${\color{#2da44e}0}$</td><td align="right">${\color{#e5534b}0}$</td></tr>
-<tr><td><strong>Total</strong></td><td align="right">${\color{#2da44e}117}$</td><td align="right">${\color{#bf8700}68}$</td><td align="right">${\color{#e5534b}9}$</td><td align="right">${\color{#2da44e}110}$</td><td align="right">${\color{#e5534b}42}$</td></tr>
+<tr><td></td>
+<th align="center">
+
+${\color{#2da44e}+}$
+
+</th>
+<th align="center">
+
+${\color{#bf8700}\sim}$
+
+</th>
+<th align="center">
+
+${\color{#e5534b}-}$
+
+</th>
+<th align="center">
+
+${\color{#2da44e}+}$
+
+</th>
+<th align="center">
+
+${\color{#e5534b}-}$
+
+</th></tr>
+<tr><td><strong>Source</strong></td>
+<td align="right">
+
+${\color{#2da44e}\mathbf{91}}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}\mathbf{68}}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}\mathbf{9}}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}106}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}42}$
+
+</td></tr>
+<tr><td>Tests</td>
+<td align="right">
+
+${\color{#2da44e}12}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}4}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td></tr>
+<tr><td>Docs</td>
+<td align="right">
+
+${\color{#2da44e}6}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td></tr>
+<tr><td>Config</td>
+<td align="right">
+
+${\color{#2da44e}8}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td></tr>
+<tr><td><strong>Total</strong></td>
+<td align="right">
+
+${\color{#2da44e}117}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}68}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}9}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}110}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}42}$
+
+</td></tr>
 <tr><td colspan="6" align="center"><em>GitHub&nbsp;reports&nbsp;+329&nbsp;/&nbsp;−144</em></td></tr>
 </table>
 
 <sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.<br>Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above:&nbsp;+34&nbsp;/&nbsp;−25.</sub>
-
-</td></tr>
-</table>
 
 ## Usage
 

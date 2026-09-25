@@ -13,7 +13,7 @@ import {
   FILE_CATEGORIES,
   type FileCategory,
 } from './tally.ts'
-import { bold, italic, td, th, tr, unbreakable } from './utils'
+import { asMarkdown, bold, italic, td, th, tr, unbreakable } from './utils'
 
 const CATEGORY_LABELS = {
   source: 'Source',
@@ -116,30 +116,44 @@ const linesChangedStr = ({
 const coloredLatex = (color: string, body: string | number) =>
   `\${\\color{${color}}${body}}$`
 
-/** One count, in the color its kind reads in unless color is off. */
+/**
+ * One count's cell, in the color its kind reads in unless color is off.
+ *
+ * A colored count is LaTeX, so it goes in as markdown rather than inline -- see
+ * `asMarkdown`. Its emphasis has to be LaTeX too, `<strong>` around LaTeX
+ * leaving the number itself unbolded.
+ */
 const countCell = (
   kind: ChangeKind,
   count: number,
   { emphasise = false, color }: { emphasise?: boolean; color: boolean }
-) => {
-  if (!color) return emphasise ? bold(count) : `${count}`
-  // Emphasis has to be LaTeX too: `<strong>` around LaTeX leaves the number
-  // itself unbolded.
-  return coloredLatex(
-    CHANGE_KIND_COLUMNS[kind].color,
-    emphasise ? `\\mathbf{${count}}` : count
+) =>
+  td(
+    color
+      ? asMarkdown(
+          coloredLatex(
+            CHANGE_KIND_COLUMNS[kind].color,
+            emphasise ? `\\mathbf{${count}}` : count
+          )
+        )
+      : emphasise
+        ? bold(count)
+        : count,
+    { align: 'right' }
   )
-}
 
 /**
- * The sign heading one column, in the color that column's counts read in.
+ * The cell heading one column: its sign, in the color that column's counts read
+ * in.
  *
  * Only the sign, since the count it reports is named by the group header
  * spanning it.
  */
 const signCell = (kind: ChangeKind, { color }: { color: boolean }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
-  return th(color ? coloredLatex(kindColor, latex) : sign, { align: 'center' })
+  return th(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
+    align: 'center',
+  })
 }
 
 /** The source row carries the headline counts, so its code cells are bold. */
@@ -151,15 +165,14 @@ const row = (
   [
     td(label),
     ...COUNT_COLUMNS.map(({ kind, count }) =>
-      td(
-        countCell(kind, tally[kind][count], {
-          emphasise: boldCode && count === 'code',
-          color,
-        }),
-        { align: 'right' }
-      )
+      countCell(kind, tally[kind][count], {
+        emphasise: boldCode && count === 'code',
+        color,
+      })
     ),
-  ].join('')
+    // A cell opened out over its own lines has to end before the next one
+    // starts, so the cells of a row go one per line rather than end to end.
+  ].join('\n')
 
 /** Every column the table has: the label, plus one per sign. */
 const COLUMN_COUNT = 1 + COUNT_COLUMNS.length
@@ -239,10 +252,12 @@ export function renderMarkdown(
       ),
       // sign header row, one cell under each column of its group
       tr(
-        td('') +
-          COUNT_COLUMNS.map(({ kind }) =>
+        [
+          td(''),
+          ...COUNT_COLUMNS.map(({ kind }) =>
             signCell(kind, { color: colorCounts })
-          ).join('')
+          ),
+        ].join('\n')
       ),
       ...rows.map(tr),
       '</table>',

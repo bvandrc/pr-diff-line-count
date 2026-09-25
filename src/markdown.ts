@@ -96,6 +96,19 @@ export type GithubDiffTotals = z.infer<typeof githubDiffTotalsSchema>
 const hasAnyLine = (tally: CategoryTally) =>
   sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0
 
+/**
+ * What a zero reads in, whatever column it lands in.
+ *
+ * A zero is neither an addition nor a removal, so it takes a gray rather than
+ * claiming one of the three. Mid-toned for the same reason they are: LaTeX takes
+ * no theme, so one value has to carry both backgrounds.
+ */
+const ZERO_COLOR = '#848d97'
+
+/** The color a count reads in: its kind's, unless there is nothing to report. */
+const countColor = (kind: ChangeKind, count: number) =>
+  count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[kind].color
+
 /** One run of colored LaTeX, the braces scoping the color to what it holds. */
 const coloredLatex = (color: string, body: string | number) =>
   `\${\\color{${color}}${body}}$`
@@ -112,8 +125,10 @@ const signedCount = (
   count: number,
   { color }: { color: boolean }
 ) => {
-  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
-  return color ? coloredLatex(kindColor, `${latex}${count}`) : `${sign}${count}`
+  const { sign, latex } = CHANGE_KIND_COLUMNS[kind]
+  return color
+    ? coloredLatex(countColor(kind, count), `${latex}${count}`)
+    : `${sign}${count}`
 }
 
 /**
@@ -163,7 +178,7 @@ const countCell = (
     color
       ? betweenBlankLines(
           coloredLatex(
-            CHANGE_KIND_COLUMNS[kind].color,
+            countColor(kind, count),
             emphasise ? boldLatex(count) : count
           )
         )

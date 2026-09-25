@@ -50038,11 +50038,13 @@ var githubDiffTotalsSchema = external_exports.object({
   deletions: external_exports.number()
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
+var ZERO_COLOR = "#848d97";
+var countColor = (kind, count) => count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[kind].color;
 var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
 var boldLatex = (body) => `\\mathbf{${body}}`;
 var signedCount = (kind, count, { color }) => {
-  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
-  return color ? coloredLatex(kindColor, `${latex}${count}`) : `${sign}${count}`;
+  const { sign, latex } = CHANGE_KIND_COLUMNS[kind];
+  return color ? coloredLatex(countColor(kind, count), `${latex}${count}`) : `${sign}${count}`;
 };
 var linesChangedStr = ({
   label,
@@ -50061,7 +50063,7 @@ var linesChangedStr = ({
 var countCell = (kind, count, { emphasise = false, color }) => td(
   color ? betweenBlankLines(
     coloredLatex(
-      CHANGE_KIND_COLUMNS[kind].color,
+      countColor(kind, count),
       emphasise ? boldLatex(count) : count
     )
   ) : emphasise ? bold(count) : count,

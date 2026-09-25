@@ -74,12 +74,12 @@ ${\color{#2da44e}12}$
 </td>
 <td align="right">
 
-${\color{#bf8700}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
 
-${\color{#e5534b}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
@@ -89,7 +89,7 @@ ${\color{#2da44e}4}$
 </td>
 <td align="right">
 
-${\color{#e5534b}0}$
+${\color{#848d97}0}$
 
 </td></tr>
 <tr><td>Docs</td>
@@ -100,22 +100,22 @@ ${\color{#2da44e}6}$
 </td>
 <td align="right">
 
-${\color{#bf8700}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
 
-${\color{#e5534b}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
 
-${\color{#2da44e}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
 
-${\color{#e5534b}0}$
+${\color{#848d97}0}$
 
 </td></tr>
 <tr><td>Config</td>
@@ -126,22 +126,22 @@ ${\color{#2da44e}8}$
 </td>
 <td align="right">
 
-${\color{#bf8700}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
 
-${\color{#e5534b}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
 
-${\color{#2da44e}0}$
+${\color{#848d97}0}$
 
 </td>
 <td align="right">
 
-${\color{#e5534b}0}$
+${\color{#848d97}0}$
 
 </td></tr>
 <tr><td><strong>Total</strong></td>
@@ -258,8 +258,9 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
     - **green** — lines added
     - **amber** — lines changed in place
     - **red** — lines removed
+    - **gray** — a zero, in whichever column it lands: nothing was added, changed, or removed, so it claims none of the three
   - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. Keeping the spanning `code` / `comment` header needs an HTML table, since a markdown table has no `colspan`, and a colored cell there has to be opened out over its own lines for its LaTeX to be read as LaTeX rather than as its own source. That is why the rendered output is several times the size of the table it draws.
-  - LaTeX takes no theme, so a color cannot follow light and dark. The three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
+  - LaTeX takes no theme, so a color cannot follow light and dark. All four are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
   - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
 - **`~ code`** — lines changed in place. cloc counts a changed line once, rather than as an add plus a delete, which is why these columns don't sum to GitHub's own `+/−`.
 - **`+ comment` / `− comment`** — comment lines, parsed per language. The headline deliberately leaves them out.

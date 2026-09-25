@@ -117,11 +117,16 @@ const coloredLatex = (color: string, body: string | number) =>
   `\${\\color{${color}}${body}}$`
 
 /**
+ * Emphasis inside LaTeX, which is where it has to go: `<strong>` around a run of
+ * LaTeX leaves what the LaTeX sets unbolded.
+ */
+const boldLatex = (body: string | number) => `\\mathbf{${body}}`
+
+/**
  * One count's cell, in the color its kind reads in unless color is off.
  *
  * A colored count is LaTeX, so it goes in as markdown rather than inline -- see
- * `asMarkdown`. Its emphasis has to be LaTeX too, `<strong>` around LaTeX
- * leaving the number itself unbolded.
+ * `asMarkdown`.
  */
 const countCell = (
   kind: ChangeKind,
@@ -133,7 +138,7 @@ const countCell = (
       ? asMarkdown(
           coloredLatex(
             CHANGE_KIND_COLUMNS[kind].color,
-            emphasise ? `\\mathbf{${count}}` : count
+            emphasise ? boldLatex(count) : count
           )
         )
       : emphasise

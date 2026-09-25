@@ -50050,11 +50050,12 @@ var linesChangedStr = ({
   ].filter(Boolean).join(" / ")}`
 );
 var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
+var boldLatex = (body) => `\\mathbf{${body}}`;
 var countCell = (kind, count, { emphasise = false, color }) => td(
   color ? asMarkdown(
     coloredLatex(
       CHANGE_KIND_COLUMNS[kind].color,
-      emphasise ? `\\mathbf{${count}}` : count
+      emphasise ? boldLatex(count) : count
     )
   ) : emphasise ? bold(count) : count,
   { align: "right" }

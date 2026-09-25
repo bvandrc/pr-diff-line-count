@@ -50021,9 +50021,24 @@ var CATEGORY_LABELS = {
   config: "Config"
 };
 var CHANGE_KIND_COLUMNS = {
-  added: { sign: "+", latex: "+", color: "#2da44e" },
-  modified: { sign: "~", latex: "\\sim", color: "#bf8700" },
-  removed: { sign: "\u2212", latex: "-", color: "#e5534b" }
+  added: {
+    sign: "+",
+    latex: "+",
+    // green
+    color: "#2da44e"
+  },
+  modified: {
+    sign: "~",
+    latex: "\\sim",
+    // amber
+    color: "#bf8700"
+  },
+  removed: {
+    sign: "\u2212",
+    latex: "-",
+    // red
+    color: "#e5534b"
+  }
 };
 var COLUMN_GROUPS = [
   { count: "code", kinds: CHANGE_KINDS },

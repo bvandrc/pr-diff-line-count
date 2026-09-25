@@ -49,9 +49,24 @@ const CATEGORY_LABELS = {
  * operator KaTeX knows, so neither survives being dropped in as written.
  */
 const CHANGE_KIND_COLUMNS = {
-  added: { sign: '+', latex: '+', color: '#2da44e' },
-  modified: { sign: '~', latex: '\\sim', color: '#bf8700' },
-  removed: { sign: '−', latex: '-', color: '#e5534b' },
+  added: {
+    sign: '+',
+    latex: '+',
+    // green
+    color: '#2da44e',
+  },
+  modified: {
+    sign: '~',
+    latex: '\\sim',
+    // amber
+    color: '#bf8700',
+  },
+  removed: {
+    sign: '−',
+    latex: '-',
+    // red
+    color: '#e5534b',
+  },
 } as const satisfies Record<
   ChangeKind,
   { sign: string; latex: string; color: string }
@@ -103,6 +118,7 @@ const hasAnyLine = (tally: CategoryTally) =>
  * claiming one of the three. Mid-toned for the same reason they are: LaTeX takes
  * no theme, so one value has to carry both backgrounds.
  */
+// gray
 const ZERO_COLOR = '#848d97'
 
 /** The color a count reads in: its kind's, unless there is nothing to report. */

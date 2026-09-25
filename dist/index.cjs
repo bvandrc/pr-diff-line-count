@@ -50069,7 +50069,7 @@ var countCell = (kind, count, { emphasise = false, color }) => td(
 );
 var signCell = (kind, { color }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
-  return th(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
+  return td(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
     align: "center"
   });
 };

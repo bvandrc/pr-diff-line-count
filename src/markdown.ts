@@ -171,10 +171,15 @@ const countCell = (
  *
  * Only the sign, since the count it reports is named by the group header
  * spanning it.
+ *
+ * A `<td>` rather than the `<th>` the row deserves: a colored sign is opened out
+ * over its own lines, which leaves its content a paragraph, and the margin a
+ * paragraph carries is reset inside a `<td>` but not inside a `<th>` -- so a
+ * `<th>` row of them stands taller than the rows of counts below it.
  */
 const signCell = (kind: ChangeKind, { color }: { color: boolean }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
-  return th(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
+  return td(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
     align: 'center',
   })
 }

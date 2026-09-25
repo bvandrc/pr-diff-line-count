@@ -15,31 +15,31 @@ The comment, and the summary table with it:
 <table>
 <tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
 <tr><td></td>
-<th align="center">
+<td align="center">
 
 ${\color{#2da44e}+}$
 
-</th>
-<th align="center">
+</td>
+<td align="center">
 
 ${\color{#bf8700}\sim}$
 
-</th>
-<th align="center">
+</td>
+<td align="center">
 
 ${\color{#e5534b}-}$
 
-</th>
-<th align="center">
+</td>
+<td align="center">
 
 ${\color{#2da44e}+}$
 
-</th>
-<th align="center">
+</td>
+<td align="center">
 
 ${\color{#e5534b}-}$
 
-</th></tr>
+</td></tr>
 <tr><td><strong>Source</strong></td>
 <td align="right">
 

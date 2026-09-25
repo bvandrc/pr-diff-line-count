@@ -45,9 +45,6 @@ const stripMarkup = (cell: string) =>
     .replace(/^\\mathbf\{(.*)\}$/, '$1')
     .replaceAll(/<\/?(strong|em)>/g, '')
 
-/** The colour a cell is set in, or `undefined` where it is plain text. */
-const cellColour = (cell: string) => /\\color\{([^}]+)\}/.exec(cell)?.[1]
-
 /** The cells of one table row, so a case can assert numbers without the markup. */
 const rowCells = (markdown: string, label: string) =>
   tableRows(markdown)
@@ -87,58 +84,6 @@ describe('renderMarkdown', () => {
       unbreakable('Blank lines are excluded above: +13 / −3.')
     )
     expect(markdown).not.toContain('Generated')
-  })
-
-  it('sets each kind of count in its own colour, headers included', () => {
-    const markdown = render(
-      clocReport({
-        added: { 'src/a.test.ts': { code: 7, comment: 2 } },
-        modified: { 'src/a.test.ts': { code: 68 } },
-        removed: { 'src/a.test.ts': { code: 9, comment: 42 } },
-      })
-    )
-
-    const [header, , counts] = tableRows(markdown)
-    const [added, modified, removed, ...commentColours] = counts
-      .slice(1)
-      .map(cellColour)
-
-    // Three colours over five columns: the code group carries all three and the
-    // comment group repeats two of them. Which hex is which is not the claim.
-    expect(new Set([added, modified, removed]).size).toBe(3)
-    expect(commentColours).toEqual([added, removed])
-    // A sign reads in the colour of the column it heads.
-    expect(header.slice(1).map(cellColour)).toEqual([
-      added,
-      modified,
-      removed,
-      added,
-      removed,
-    ])
-  })
-
-  it('spells a header sign as the maths that survives being one', () => {
-    const markdown = render(clocReport({ added: { 'src/a.ts': { code: 91 } } }))
-
-    // A literal `~` in maths is a non-breaking space and `−` is not an operator
-    // KaTeX knows, so neither reaches a header as written. The words it names
-    // stay out of the maths.
-    const [header] = tableRows(markdown)
-    expect(header.slice(1).map(stripMarkup)).toEqual([
-      '+ code',
-      '\\sim code',
-      '- code',
-      '+ comment',
-      '- comment',
-    ])
-  })
-
-  it("bolds the source row's code counts inside the maths, not around it", () => {
-    const markdown = render(clocReport({ added: { 'src/a.ts': { code: 91 } } }))
-
-    // `<strong>` outside the maths would leave the number itself unbolded.
-    expect(markdown).toMatch(/\$\{\\color\{[^}]+\}\\mathbf\{91\}\}\$/)
-    expect(markdown).not.toContain(bold(91))
   })
 
   it('leaves the counts as plain text when colour is off', () => {

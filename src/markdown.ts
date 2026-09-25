@@ -13,7 +13,7 @@ import {
   FILE_CATEGORIES,
   type FileCategory,
 } from './tally.ts'
-import { asMarkdown, bold, italic, td, th, tr, unbreakable } from './utils'
+import { bold, italic, unbreakable } from './utils'
 
 const CATEGORY_LABELS = {
   source: 'Source',
@@ -68,6 +68,20 @@ const COLUMN_GROUPS = [
 const COUNT_COLUMNS = COLUMN_GROUPS.flatMap(({ count, kinds }) =>
   kinds.map((kind) => ({ kind, count }))
 )
+
+/**
+ * The top header row: each group's label, then a blank cell for every further
+ * column of that group.
+ *
+ * A markdown table has no colspan, so a label cannot be centred over the columns
+ * it heads -- it sits in the first of them, with the signs lined up underneath.
+ */
+const GROUP_HEADER_CELLS = COLUMN_GROUPS.flatMap(({ count, kinds }) =>
+  kinds.map((_, column) => (column === 0 ? count : ''))
+)
+
+/** One table row, from the cells it holds. */
+const mdRow = (cells: string[]) => `| ${cells.join(' | ')} |`
 
 /**
  * GitHub's own PR-level counts, shown alongside ours so the gap is visible.
@@ -139,43 +153,31 @@ const linesChangedStr = ({
     : unbreakable(`${label} ${counts}`)
 }
 
-/**
- * One count's cell, in the color its kind reads in unless color is off.
- *
- * A colored count is LaTeX, so it goes in as markdown rather than inline -- see
- * `asMarkdown`.
- */
+/** One count, in the color its kind reads in unless color is off. */
 const countCell = (
   kind: ChangeKind,
   count: number,
   { emphasise = false, color }: { emphasise?: boolean; color: boolean }
 ) =>
-  td(
-    color
-      ? asMarkdown(
-          coloredLatex(
-            CHANGE_KIND_COLUMNS[kind].color,
-            emphasise ? boldLatex(count) : count
-          )
-        )
-      : emphasise
-        ? bold(count)
-        : count,
-    { align: 'right' }
-  )
+  color
+    ? coloredLatex(
+        CHANGE_KIND_COLUMNS[kind].color,
+        emphasise ? boldLatex(count) : count
+      )
+    : emphasise
+      ? bold(count)
+      : `${count}`
 
 /**
  * The cell heading one column: its sign, in the color that column's counts read
  * in.
  *
- * Only the sign, since the count it reports is named by the group header
- * spanning it.
+ * Only the sign, since the count it reports is named by the group header above
+ * it.
  */
 const signCell = (kind: ChangeKind, { color }: { color: boolean }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
-  return th(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
-    align: 'center',
-  })
+  return color ? coloredLatex(kindColor, latex) : sign
 }
 
 /** The source row carries the headline counts, so its code cells are bold. */
@@ -184,20 +186,15 @@ const row = (
   tally: CategoryTally,
   { boldCode = false, color }: { boldCode?: boolean; color: boolean }
 ) =>
-  [
-    td(label),
+  mdRow([
+    label,
     ...COUNT_COLUMNS.map(({ kind, count }) =>
       countCell(kind, tally[kind][count], {
         emphasise: boldCode && count === 'code',
         color,
       })
     ),
-    // A cell opened out over its own lines has to end before the next one
-    // starts, so the cells of a row go one per line rather than end to end.
-  ].join('\n')
-
-/** Every column the table has: the label, plus one per sign. */
-const COLUMN_COUNT = 1 + COUNT_COLUMNS.length
+  ])
 
 /**
  * Renders one diff as a table.
@@ -210,8 +207,11 @@ const COLUMN_COUNT = 1 + COUNT_COLUMNS.length
  * Turning it off leaves them plain, for where the `markdown` output is rendered
  * by something that does no LaTeX.
  *
- * The table is HTML rather than markdown: the sign columns are grouped under a
- * spanning `code` / `comment` header, and a markdown table has no colspan.
+ * The table is markdown, which has no colspan, so `code` and `comment` head the
+ * first column of the span each names rather than sitting centred over it, and
+ * GitHub's own totals go under the table rather than in a row of their own. HTML
+ * would give both back, but nothing inside an HTML block is markdown, and being
+ * read as markdown is what the LaTeX needs.
  */
 export function renderMarkdown(
   tally: DiffTally,
@@ -247,47 +247,33 @@ export function renderMarkdown(
   if (shown.length > 1)
     rows.push(row(bold('Total'), tally.total, { color: colorCounts }))
 
-  // GitHub's own count of the same diff, spanning the table under our rows.
-  if (ghTotals) {
-    const reported = italic(
-      linesChangedStr({
-        label: 'GitHub reports',
-        added: ghTotals.additions,
-        removed: ghTotals.deletions,
-        color: colorCounts,
-      })
-    )
-    rows.push(
-      td(colorCounts ? asMarkdown(reported) : reported, {
-        colspan: COLUMN_COUNT,
-        align: 'center',
-      })
-    )
-  }
-
   lines.push(
     [
-      '<table>',
-      // group header row: what each span of sign columns counts
-      tr(
-        td('') +
-          COLUMN_GROUPS.map(({ count, kinds }) =>
-            th(count, { colspan: kinds.length, align: 'center' })
-          ).join('')
-      ),
-      // sign header row, one cell under each column of its group
-      tr(
-        [
-          td(''),
-          ...COUNT_COLUMNS.map(({ kind }) =>
-            signCell(kind, { color: colorCounts })
-          ),
-        ].join('\n')
-      ),
-      ...rows.map(tr),
-      '</table>',
+      mdRow(['', ...GROUP_HEADER_CELLS]),
+      mdRow(['---', ...COUNT_COLUMNS.map(() => '---:')]),
+      // the sign row, one cell under each column of its group
+      mdRow([
+        '',
+        ...COUNT_COLUMNS.map(({ kind }) =>
+          signCell(kind, { color: colorCounts })
+        ),
+      ]),
+      ...rows,
     ].join('\n')
   )
+
+  // GitHub's own count of the same diff, under the table for want of a colspan.
+  if (ghTotals)
+    lines.push(
+      italic(
+        linesChangedStr({
+          label: 'GitHub reports',
+          added: ghTotals.additions,
+          removed: ghTotals.deletions,
+          color: colorCounts,
+        })
+      )
+    )
 
   lines.push(
     `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\n${linesChangedStr({ label: 'Blank lines are excluded above:', color: colorCounts, ...mapValues(pick(tally.total, ['added', 'removed']), ({ blank }) => blank) })}.</sub>`

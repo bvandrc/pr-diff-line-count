@@ -20,20 +20,16 @@ const GLOBS = {
   config: ['**/*.json', '**/*.yml'],
 } as const satisfies CategoryGlobs
 
-/**
- * Every table row, as the cells of each are written.
- *
- * A cell is matched across lines, a colored one being opened out over its own so
- * its LaTeX parses as markdown.
- */
+/** Every table row, as the cells of each are written. */
 const tableRows = (markdown: string) =>
   markdown
-    .split('<tr>')
-    .slice(1)
-    .map((rowHtml) =>
-      [...rowHtml.matchAll(/<t[dh][^>]*>(.*?)<\/t[dh]>/gs)].map(([, cell]) =>
-        cell.trim()
-      )
+    .split('\n')
+    .filter((line) => line.startsWith('|'))
+    .map((line) =>
+      line
+        .split('|')
+        .slice(1, -1)
+        .map((cell) => cell.trim())
     )
 
 /**

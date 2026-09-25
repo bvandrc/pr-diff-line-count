@@ -49,9 +49,6 @@ const CHANGE_KIND_COLUMNS = {
     latex: '+',
     color: '#2da44e', // green
   },
-  // Amber for a change in place, as a diff tool usually marks one: neither an
-  // addition nor a removal, which is the point. Leaving it uncolored was the
-  // alternative, but a plain count beside LaTeX makes a row mix two typefaces.
   modified: {
     sign: '~',
     latex: '\\sim',

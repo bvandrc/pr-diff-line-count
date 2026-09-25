@@ -20,16 +20,38 @@ const GLOBS = {
   config: ['**/*.json', '**/*.yml'],
 } as const satisfies CategoryGlobs
 
-/** The cells of one table row, so a case can assert numbers without the markup. */
-const rowCells = (markdown: string, label: string) =>
+/**
+ * Every table row, as the cells of each are written.
+ *
+ * A cell is matched across lines, a colored one being opened out over its own so
+ * its LaTeX parses as markdown.
+ */
+const tableRows = (markdown: string) =>
   markdown
-    .split('\n')
-    .map((line) =>
-      [...line.matchAll(/<td[^>]*>(.*?)<\/td>/g)].map(([, cell]) =>
-        // Emphasis is asserted on its own; these cases are about the counts.
-        cell.replaceAll(/<\/?(strong|em)>/g, '')
+    .split('<tr>')
+    .slice(1)
+    .map((rowHtml) =>
+      [...rowHtml.matchAll(/<t[dh][^>]*>(.*?)<\/t[dh]>/gs)].map(([, cell]) =>
+        cell.trim()
       )
     )
+
+/**
+ * A cell with the color, emphasis, and LaTeX taken off, leaving what it says.
+ *
+ * The color goes by pattern rather than by value, so which hex a kind reads in
+ * stays `markdown.ts`'s business.
+ */
+const stripMarkup = (cell: string) =>
+  cell
+    .replaceAll(/\$\{\\color\{[^}]+\}(.*?)\}\$/g, '$1')
+    .replace(/^\\mathbf\{(.*)\}$/, '$1')
+    .replaceAll(/<\/?(strong|em)>/g, '')
+
+/** The cells of one table row, so a case can assert numbers without the markup. */
+const rowCells = (markdown: string, label: string) =>
+  tableRows(markdown)
+    .map((cells) => cells.map(stripMarkup))
     .find((cells) => cells[0] === label)
     ?.slice(1)
 
@@ -37,9 +59,13 @@ const render = (
   report: ClocDiffReport,
   {
     globs = GLOBS,
-    githubTotals,
-  }: { globs?: CategoryGlobs; githubTotals?: GithubDiffTotals } = {}
-) => renderMarkdown(tallyDiff(report, globs), { githubTotals })
+    ...options
+  }: {
+    globs?: CategoryGlobs
+    githubTotals?: GithubDiffTotals
+    colorCounts?: boolean
+  } = {}
+) => renderMarkdown(tallyDiff(report, globs), options)
 
 describe('renderMarkdown', () => {
   it('lays out a row per touched category, a total, and a blank-line footnote', () => {
@@ -57,10 +83,25 @@ describe('renderMarkdown', () => {
     expect(rowCells(markdown, 'Source')).toEqual(['91', '0', '9', '106', '42'])
     expect(rowCells(markdown, 'Tests')).toEqual(['7', '0', '0', '2', '0'])
     expect(rowCells(markdown, 'Total')).toEqual(['98', '0', '9', '108', '42'])
-    expect(markdown).toContain(
-      unbreakable('Blank lines are excluded above: +13 / −3.')
+    // The footnote's counts are LaTeX by default, so the color comes off first.
+    // Its minus is the one LaTeX sets rather than U+2212, and it keeps real
+    // spaces rather than the `&nbsp;` a plain phrase is held together with.
+    expect(stripMarkup(markdown)).toContain(
+      'Blank lines are excluded above: +13 / -3.'
     )
     expect(markdown).not.toContain('Generated')
+  })
+
+  it('writes no LaTeX when color is off', () => {
+    const markdown = render(
+      clocReport({
+        added: { 'src/a.ts': { code: 91 } },
+        removed: { 'src/a.ts': { code: 9 } },
+      }),
+      { colorCounts: false }
+    )
+
+    expect(markdown).not.toContain('\\color')
   })
 
   it('omits the total row when only one category changed', () => {
@@ -77,10 +118,12 @@ describe('renderMarkdown', () => {
           'src/a.test.ts': { code: 7 },
         },
       }),
-      { githubTotals: { additions: 329, deletions: 144 } }
+      { githubTotals: { additions: 329, deletions: 144 }, colorCounts: false }
     )
 
-    expect(markdown).toContain(unbreakable('GitHub reports +329 / −144'))
+    expect(stripMarkup(markdown)).toContain(
+      unbreakable('GitHub reports +329 / −144')
+    )
   })
 
   it('leaves the totals row out when GitHub reports nothing', () => {

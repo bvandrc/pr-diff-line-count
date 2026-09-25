@@ -50024,20 +50024,20 @@ var CHANGE_KIND_COLUMNS = {
   added: {
     sign: "+",
     latex: "+",
-    // green
     color: "#2da44e"
+    // green
   },
   modified: {
     sign: "~",
     latex: "\\sim",
-    // amber
     color: "#bf8700"
+    // amber
   },
   removed: {
     sign: "\u2212",
     latex: "-",
-    // red
     color: "#e5534b"
+    // red
   }
 };
 var COLUMN_GROUPS = [

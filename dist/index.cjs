@@ -50037,20 +50037,26 @@ var githubDiffTotalsSchema = external_exports.object({
   deletions: external_exports.number()
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
+var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
+var boldLatex = (body) => `\\mathbf{${body}}`;
+var signedCount = (kind, count, { color }) => {
+  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
+  return color ? coloredLatex(kindColor, `${latex}${count}`) : `${sign}${count}`;
+};
 var linesChangedStr = ({
   label,
   added,
   modified,
-  removed
-}) => unbreakable(
-  `${label} ${[
-    `+${added}`,
-    modified === void 0 ? "" : `~${modified}`,
-    `\u2212${removed}`
-  ].filter(Boolean).join(" / ")}`
-);
-var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
-var boldLatex = (body) => `\\mathbf{${body}}`;
+  removed,
+  color = false
+}) => {
+  const counts = [
+    signedCount("added", added, { color }),
+    modified === void 0 ? "" : signedCount("modified", modified, { color }),
+    signedCount("removed", removed, { color })
+  ].filter(Boolean).join(" / ");
+  return color ? `${unbreakable(label)} ${counts}` : unbreakable(`${label} ${counts}`);
+};
 var countCell = (kind, count, { emphasise = false, color }) => td(
   color ? asMarkdown(
     coloredLatex(
@@ -50102,19 +50108,22 @@ function renderMarkdown(tally, {
   });
   if (shown.length > 1)
     rows.push(row(bold("Total"), tally.total, { color: colorCounts }));
-  if (ghTotals)
-    rows.push(
-      td(
-        italic(
-          linesChangedStr({
-            label: "GitHub reports",
-            added: ghTotals.additions,
-            removed: ghTotals.deletions
-          })
-        ),
-        { colspan: COLUMN_COUNT, align: "center" }
-      )
+  if (ghTotals) {
+    const reported = italic(
+      linesChangedStr({
+        label: "GitHub reports",
+        added: ghTotals.additions,
+        removed: ghTotals.deletions,
+        color: colorCounts
+      })
     );
+    rows.push(
+      td(colorCounts ? asMarkdown(reported) : reported, {
+        colspan: COLUMN_COUNT,
+        align: "center"
+      })
+    );
+  }
   lines.push(
     [
       "<table>",
@@ -50139,7 +50148,7 @@ function renderMarkdown(tally, {
   );
   lines.push(
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-${linesChangedStr({ label: "Blank lines are excluded above:", ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
+${linesChangedStr({ label: "Blank lines are excluded above:", color: colorCounts, ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
   );
   return lines.join("\n\n");
 }

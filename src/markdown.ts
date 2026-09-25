@@ -85,33 +85,6 @@ export type GithubDiffTotals = z.infer<typeof githubDiffTotalsSchema>
 const hasAnyLine = (tally: CategoryTally) =>
   sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0
 
-/**
- * One labelled phrase of counts — `Source code: +1 / ~3 / −0` — kept whole.
- *
- * `modified` is left out for the sources that have no such count, like GitHub's
- * own totals.
- */
-const linesChangedStr = ({
-  label,
-  added,
-  modified,
-  removed,
-}: {
-  label: string
-  added: number
-  modified?: number
-  removed: number
-}) =>
-  unbreakable(
-    `${label} ${[
-      `+${added}`,
-      modified === undefined ? '' : `~${modified}`,
-      `−${removed}`,
-    ]
-      .filter(Boolean)
-      .join(' / ')}`
-  )
-
 /** One run of colored LaTeX, the braces scoping the color to what it holds. */
 const coloredLatex = (color: string, body: string | number) =>
   `\${\\color{${color}}${body}}$`
@@ -121,6 +94,50 @@ const coloredLatex = (color: string, body: string | number) =>
  * LaTeX leaves what the LaTeX sets unbolded.
  */
 const boldLatex = (body: string | number) => `\\mathbf{${body}}`
+
+/** One count behind the sign its kind is written with, colored where asked. */
+const signedCount = (
+  kind: ChangeKind,
+  count: number,
+  { color }: { color: boolean }
+) => {
+  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
+  return color ? coloredLatex(kindColor, `${latex}${count}`) : `${sign}${count}`
+}
+
+/**
+ * One labelled phrase of counts — `Source code: +1 / ~3 / −0`.
+ *
+ * `modified` is left out for the sources that have no such count, like GitHub's
+ * own totals.
+ */
+const linesChangedStr = ({
+  label,
+  added,
+  modified,
+  removed,
+  color = false,
+}: {
+  label: string
+  added: number
+  modified?: number
+  removed: number
+  color?: boolean
+}) => {
+  const counts = [
+    signedCount('added', added, { color }),
+    modified === undefined ? '' : signedCount('modified', modified, { color }),
+    signedCount('removed', removed, { color }),
+  ]
+    .filter(Boolean)
+    .join(' / ')
+  // A colored count is LaTeX, and an `&nbsp;` beside a `$` leaves the delimiter
+  // an entity where it wants a space, so a phrase carrying LaTeX holds only its
+  // label together.
+  return color
+    ? `${unbreakable(label)} ${counts}`
+    : unbreakable(`${label} ${counts}`)
+}
 
 /**
  * One count's cell, in the color its kind reads in unless color is off.
@@ -231,19 +248,22 @@ export function renderMarkdown(
     rows.push(row(bold('Total'), tally.total, { color: colorCounts }))
 
   // GitHub's own count of the same diff, spanning the table under our rows.
-  if (ghTotals)
-    rows.push(
-      td(
-        italic(
-          linesChangedStr({
-            label: 'GitHub reports',
-            added: ghTotals.additions,
-            removed: ghTotals.deletions,
-          })
-        ),
-        { colspan: COLUMN_COUNT, align: 'center' }
-      )
+  if (ghTotals) {
+    const reported = italic(
+      linesChangedStr({
+        label: 'GitHub reports',
+        added: ghTotals.additions,
+        removed: ghTotals.deletions,
+        color: colorCounts,
+      })
     )
+    rows.push(
+      td(colorCounts ? asMarkdown(reported) : reported, {
+        colspan: COLUMN_COUNT,
+        align: 'center',
+      })
+    )
+  }
 
   lines.push(
     [
@@ -270,7 +290,7 @@ export function renderMarkdown(
   )
 
   lines.push(
-    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\n${linesChangedStr({ label: 'Blank lines are excluded above:', ...mapValues(pick(tally.total, ['added', 'removed']), ({ blank }) => blank) })}.</sub>`
+    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\n${linesChangedStr({ label: 'Blank lines are excluded above:', color: colorCounts, ...mapValues(pick(tally.total, ['added', 'removed']), ({ blank }) => blank) })}.</sub>`
   )
 
   return lines.join('\n\n')

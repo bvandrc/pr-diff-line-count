@@ -39,11 +39,6 @@ const CATEGORY_LABELS = {
  * one color whatever the theme, hence mid tones rather than GitHub's own diff
  * green and red, each of which only works against one background.
  *
- * `modified` is amber, the color a diff tool usually marks a change in place
- * with -- it reads as neither an addition nor a removal, which is the point.
- * Leaving it alone was the alternative, but an uncolored count is plain text
- * beside LaTeX, so a row would mix two typefaces.
- *
  * Each sign is spelled twice because a header carries it into the LaTeX: a
  * literal `~` there is a non-breaking space, and `−` (U+2212) is not an
  * operator KaTeX knows, so neither survives being dropped in as written.
@@ -54,6 +49,9 @@ const CHANGE_KIND_COLUMNS = {
     latex: '+',
     color: '#2da44e', // green
   },
+  // Amber for a change in place, as a diff tool usually marks one: neither an
+  // addition nor a removal, which is the point. Leaving it uncolored was the
+  // alternative, but a plain count beside LaTeX makes a row mix two typefaces.
   modified: {
     sign: '~',
     latex: '\\sim',

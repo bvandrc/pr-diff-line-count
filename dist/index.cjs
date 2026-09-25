@@ -49999,8 +49999,8 @@ function tallyDiff(report, globs) {
 
 // src/utils/index.ts
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
-var bold = (content) => `<strong>${content}</strong>`;
-var italic = (content) => `<em>${content}</em>`;
+var bold = (content) => `**${content}**`;
+var italic = (content) => `_${content}_`;
 
 // src/markdown.ts
 var CATEGORY_LABELS = {
@@ -50023,7 +50023,13 @@ var COUNT_COLUMNS = COLUMN_GROUPS.flatMap(
   ({ count, kinds }) => kinds.map((kind) => ({ kind, count }))
 );
 var GROUP_HEADER_CELLS = COLUMN_GROUPS.flatMap(
-  ({ count, kinds }) => kinds.map((_, column) => column === 0 ? count : "")
+  ({ count, kinds }) => (
+    // The middle column of the span, since the counts are right-aligned: a label
+    // there sits about where a spanning one would, rather than off at the left.
+    kinds.map(
+      (_, column) => column === Math.floor((kinds.length - 1) / 2) ? count : ""
+    )
+  )
 );
 var mdRow = (cells) => `| ${cells.join(" | ")} |`;
 var githubDiffTotalsSchema = external_exports.object({
@@ -50049,7 +50055,7 @@ var linesChangedStr = ({
     modified === void 0 ? "" : signedCount("modified", modified, { color }),
     signedCount("removed", removed, { color })
   ].filter(Boolean).join(" / ");
-  return color ? `${unbreakable(label)} ${counts}` : unbreakable(`${label} ${counts}`);
+  return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`);
 };
 var countCell = (kind, count, { emphasise = false, color }) => color ? coloredLatex(
   CHANGE_KIND_COLUMNS[kind].color,

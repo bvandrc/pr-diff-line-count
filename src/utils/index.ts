@@ -45,6 +45,12 @@ export const typedFromEntries = <
 /** Keeps a phrase on one line, whatever the comment's width. */
 export const unbreakable = (text: string) => text.replaceAll(' ', '&nbsp;')
 
-/** Emphasis, as the comment renderer spells it. */
-export const bold = (content: string | number) => `<strong>${content}</strong>`
-export const italic = (content: string | number) => `<em>${content}</em>`
+/**
+ * Emphasis, in markdown rather than in `<strong>`/`<em>`.
+ *
+ * Raw inline HTML around a run of LaTeX stops GitHub rendering it -- the
+ * reported-totals line came back reading its own source while the table's cells,
+ * which carry no HTML, rendered.
+ */
+export const bold = (content: string | number) => `**${content}**`
+export const italic = (content: string | number) => `_${content}_`

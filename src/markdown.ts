@@ -73,11 +73,16 @@ const COUNT_COLUMNS = COLUMN_GROUPS.flatMap(({ count, kinds }) =>
  * The top header row: each group's label, then a blank cell for every further
  * column of that group.
  *
- * A markdown table has no colspan, so a label cannot be centred over the columns
- * it heads -- it sits in the first of them, with the signs lined up underneath.
+ * A markdown table has no colspan, so a label cannot actually span the columns
+ * it heads; it sits in the middle one of them instead, with the signs lined up
+ * underneath.
  */
 const GROUP_HEADER_CELLS = COLUMN_GROUPS.flatMap(({ count, kinds }) =>
-  kinds.map((_, column) => (column === 0 ? count : ''))
+  // The middle column of the span, since the counts are right-aligned: a label
+  // there sits about where a spanning one would, rather than off at the left.
+  kinds.map((_, column) =>
+    column === Math.floor((kinds.length - 1) / 2) ? count : ''
+  )
 )
 
 /** One table row, from the cells it holds. */
@@ -145,12 +150,11 @@ const linesChangedStr = ({
   ]
     .filter(Boolean)
     .join(' / ')
-  // A colored count is LaTeX, and an `&nbsp;` beside a `$` leaves the delimiter
-  // an entity where it wants a space, so a phrase carrying LaTeX holds only its
-  // label together.
-  return color
-    ? `${unbreakable(label)} ${counts}`
-    : unbreakable(`${label} ${counts}`)
+  // A phrase carrying LaTeX keeps out of `unbreakable`'s way entirely: an
+  // `&nbsp;` beside a `$` leaves the delimiter an entity where it wants a space,
+  // and that is one of the two things that could be stopping GitHub rendering
+  // the LaTeX here. The cost is that such a phrase can wrap.
+  return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`)
 }
 
 /** One count, in the color its kind reads in unless color is off. */

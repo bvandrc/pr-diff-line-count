@@ -42,7 +42,7 @@ const stripMarkup = (cell: string) =>
   cell
     .replaceAll(/\$\{\\color\{[^}]+\}(.*?)\}\$/g, '$1')
     .replace(/^\\mathbf\{(.*)\}$/, '$1')
-    .replaceAll(/<\/?(strong|em)>/g, '')
+    .replaceAll(/\*\*|_/g, '')
 
 /** The cells of one table row, so a case can assert numbers without the markup. */
 const rowCells = (markdown: string, label: string) =>
@@ -79,10 +79,11 @@ describe('renderMarkdown', () => {
     expect(rowCells(markdown, 'Source')).toEqual(['91', '0', '9', '106', '42'])
     expect(rowCells(markdown, 'Tests')).toEqual(['7', '0', '0', '2', '0'])
     expect(rowCells(markdown, 'Total')).toEqual(['98', '0', '9', '108', '42'])
-    // The footnote's counts are LaTeX by default, so the color comes off first,
-    // and its minus is the one LaTeX sets rather than U+2212.
+    // The footnote's counts are LaTeX by default, so the color comes off first.
+    // Its minus is the one LaTeX sets rather than U+2212, and it keeps real
+    // spaces rather than the `&nbsp;` a plain phrase is held together with.
     expect(stripMarkup(markdown)).toContain(
-      `${unbreakable('Blank lines are excluded above:')} +13 / -3.`
+      'Blank lines are excluded above: +13 / -3.'
     )
     expect(markdown).not.toContain('Generated')
   })

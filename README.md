@@ -12,18 +12,18 @@ The result comes back three ways:
 
 The comment, and the summary table with it:
 
-|  | code |  |  | comment |  |
+|  |  | code |  | comment |  |
 | --- | --: | --: | --: | --: | --: |
 |  | ${\color{#2da44e}+}$ | ${\color{#bf8700}\sim}$ | ${\color{#e5534b}-}$ | ${\color{#2da44e}+}$ | ${\color{#e5534b}-}$ |
-| <strong>Source</strong> | ${\color{#2da44e}\mathbf{91}}$ | ${\color{#bf8700}\mathbf{68}}$ | ${\color{#e5534b}\mathbf{9}}$ | ${\color{#2da44e}106}$ | ${\color{#e5534b}42}$ |
+| **Source** | ${\color{#2da44e}\mathbf{91}}$ | ${\color{#bf8700}\mathbf{68}}$ | ${\color{#e5534b}\mathbf{9}}$ | ${\color{#2da44e}106}$ | ${\color{#e5534b}42}$ |
 | Tests | ${\color{#2da44e}12}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}4}$ | ${\color{#e5534b}0}$ |
 | Docs | ${\color{#2da44e}6}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}0}$ | ${\color{#e5534b}0}$ |
 | Config | ${\color{#2da44e}8}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}0}$ | ${\color{#e5534b}0}$ |
-| <strong>Total</strong> | ${\color{#2da44e}117}$ | ${\color{#bf8700}68}$ | ${\color{#e5534b}9}$ | ${\color{#2da44e}110}$ | ${\color{#e5534b}42}$ |
+| **Total** | ${\color{#2da44e}117}$ | ${\color{#bf8700}68}$ | ${\color{#e5534b}9}$ | ${\color{#2da44e}110}$ | ${\color{#e5534b}42}$ |
 
-<em>GitHub&nbsp;reports ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$</em>
+_GitHub reports ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$_
 
-<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's. Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
+<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's. Blank lines are excluded above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
 
 ## Usage
 
@@ -104,7 +104,7 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
     - **green** — lines added
     - **amber** — lines changed in place
     - **red** — lines removed
-  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. It is also why `code` and `comment` head the first column of the span each names rather than sitting centred over it: a spanning header needs an HTML table, and nothing inside an HTML block is read as markdown, LaTeX included.
+  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. It is also why `code` and `comment` sit in the middle column of the span each names rather than spanning it: a real spanning header needs an HTML table's `colspan`, and nothing inside an HTML block is read as markdown, LaTeX included.
   - LaTeX takes no theme, so a color cannot follow light and dark. The three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
   - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
 - **`~ code`** — lines changed in place. cloc counts a changed line once, rather than as an add plus a delete, which is why these columns don't sum to GitHub's own `+/−`.

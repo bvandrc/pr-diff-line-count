@@ -50006,7 +50006,7 @@ var attrsStr = (attrs) => typedEntries(attrs).map(([name, value]) => ` ${name}="
 var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
 var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
 var tr = (cells) => `<tr>${cells}</tr>`;
-var asMarkdown = (content) => `
+var betweenBlankLines = (content) => `
 
 ${content}
 
@@ -50059,7 +50059,7 @@ var linesChangedStr = ({
   return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`);
 };
 var countCell = (kind, count, { emphasise = false, color }) => td(
-  color ? asMarkdown(
+  color ? betweenBlankLines(
     coloredLatex(
       CHANGE_KIND_COLUMNS[kind].color,
       emphasise ? boldLatex(count) : count
@@ -50069,7 +50069,7 @@ var countCell = (kind, count, { emphasise = false, color }) => td(
 );
 var signCell = (kind, { color }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
-  return td(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
+  return td(color ? betweenBlankLines(coloredLatex(kindColor, latex)) : sign, {
     align: "center"
   });
 };
@@ -50116,7 +50116,7 @@ function renderMarkdown(tally, {
       color: colorCounts
     });
     rows.push(
-      td(colorCounts ? asMarkdown(reported) : reported, {
+      td(colorCounts ? betweenBlankLines(reported) : reported, {
         colspan: COLUMN_COUNT,
         align: "center"
       })

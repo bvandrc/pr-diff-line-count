@@ -13,7 +13,15 @@ import {
   FILE_CATEGORIES,
   type FileCategory,
 } from './tally.ts'
-import { asMarkdown, bold, italic, td, th, tr, unbreakable } from './utils'
+import {
+  betweenBlankLines,
+  bold,
+  italic,
+  td,
+  th,
+  tr,
+  unbreakable,
+} from './utils'
 
 const CATEGORY_LABELS = {
   source: 'Source',
@@ -143,8 +151,8 @@ const linesChangedStr = ({
 /**
  * One count's cell, in the color its kind reads in unless color is off.
  *
- * A colored count is LaTeX, so it goes in as markdown rather than inline -- see
- * `asMarkdown`.
+ * A colored count is LaTeX, so it needs a blank line either side of it to be
+ * read as LaTeX at all -- see `betweenBlankLines`.
  */
 const countCell = (
   kind: ChangeKind,
@@ -153,7 +161,7 @@ const countCell = (
 ) =>
   td(
     color
-      ? asMarkdown(
+      ? betweenBlankLines(
           coloredLatex(
             CHANGE_KIND_COLUMNS[kind].color,
             emphasise ? boldLatex(count) : count
@@ -172,14 +180,14 @@ const countCell = (
  * Only the sign, since the count it reports is named by the group header
  * spanning it.
  *
- * A `<td>` rather than the `<th>` the row deserves: a colored sign is opened out
- * over its own lines, which leaves its content a paragraph, and the margin a
+ * A `<td>` rather than the `<th>` the row deserves: a colored sign is written
+ * between blank lines, which leaves its content a paragraph, and the margin a
  * paragraph carries is reset inside a `<td>` but not inside a `<th>` -- so a
  * `<th>` row of them stands taller than the rows of counts below it.
  */
 const signCell = (kind: ChangeKind, { color }: { color: boolean }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
-  return td(color ? asMarkdown(coloredLatex(kindColor, latex)) : sign, {
+  return td(color ? betweenBlankLines(coloredLatex(kindColor, latex)) : sign, {
     align: 'center',
   })
 }
@@ -263,7 +271,7 @@ export function renderMarkdown(
       color: colorCounts,
     })
     rows.push(
-      td(colorCounts ? asMarkdown(reported) : reported, {
+      td(colorCounts ? betweenBlankLines(reported) : reported, {
         colspan: COLUMN_COUNT,
         align: 'center',
       })

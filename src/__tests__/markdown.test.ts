@@ -5,7 +5,7 @@ import type { ClocDiffReport } from '../cloc/run.ts'
 import type { GithubDiffTotals } from '../markdown.ts'
 import { renderMarkdown } from '../markdown.ts'
 import { type CategoryGlobs, tallyDiff } from '../tally.ts'
-import { bold, unbreakable } from '../utils'
+import { bold, td, th, unbreakable } from '../utils'
 
 /** Builds the `--by-file` shape from just the entries a case cares about. */
 const clocReport = (sections: PartialDeep<ClocDiffReport>): ClocDiffReport =>
@@ -20,24 +20,20 @@ const GLOBS = {
   config: ['**/*.json', '**/*.yml'],
 } as const satisfies CategoryGlobs
 
-/** Every table row, as its cells are written. */
+/** Every table row, as the cells of each are written. */
 const tableRows = (markdown: string) =>
   markdown
     .split('\n')
-    .filter((line) => line.startsWith('|'))
     .map((line) =>
-      line
-        .split('|')
-        .slice(1, -1)
-        .map((cell) => cell.trim())
+      [...line.matchAll(/<t[dh][^>]*>(.*?)<\/t[dh]>/g)].map(([, cell]) => cell)
     )
+    .filter((cells) => cells.length > 0)
 
 /**
  * A cell with the color, emphasis, and LaTeX taken off, leaving what it says.
  *
  * The color goes by pattern rather than by value, so which hex a kind reads in
- * stays `markdown.ts`'s business. Unanchored, because a header holds its sign in
- * LaTeX and the count it names outside.
+ * stays `markdown.ts`'s business.
  */
 const stripMarkup = (cell: string) =>
   cell
@@ -95,11 +91,12 @@ describe('renderMarkdown', () => {
       { colorCounts: false }
     )
 
-    expect(markdown).not.toContain('color')
-    // The headers fall back to the signs as they read outside LaTeX.
-    expect(markdown).toContain('| + code | ~ code | − code |')
+    expect(markdown).not.toContain('\\color')
+    // The sign headers fall back to the signs as they read outside LaTeX.
+    for (const sign of ['+', '~', '−'])
+      expect(markdown, sign).toContain(th(sign, { align: 'center' }))
     // The source row is still emphasised, in markup rather than in LaTeX.
-    expect(markdown).toContain(`| ${bold(91)} |`)
+    expect(markdown).toContain(td(bold(91), { align: 'right' }))
     expect(rowCells(markdown, 'Source')).toEqual(['91', '0', '9', '0', '0'])
   })
 

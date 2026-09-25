@@ -49998,9 +49998,14 @@ function tallyDiff(report, globs) {
 }
 
 // src/utils/index.ts
+var typedEntries = (o) => Object.entries(o);
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 var bold = (content) => `<strong>${content}</strong>`;
 var italic = (content) => `<em>${content}</em>`;
+var attrsStr = (attrs) => typedEntries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
+var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
+var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
+var tr = (cells) => `<tr>${cells}</tr>`;
 
 // src/markdown.ts
 var CATEGORY_LABELS = {
@@ -50015,13 +50020,13 @@ var CHANGE_KIND_COLUMNS = {
   modified: { sign: "~", latex: "\\sim", color: "#bf8700" },
   removed: { sign: "\u2212", latex: "-", color: "#e5534b" }
 };
-var COUNT_COLUMNS = [
-  ...CHANGE_KINDS.map((kind) => ({ kind, count: "code" })),
-  ...without(CHANGE_KINDS, "modified").map((kind) => ({
-    kind,
-    count: "comment"
-  }))
+var COLUMN_GROUPS = [
+  { count: "code", kinds: CHANGE_KINDS },
+  { count: "comment", kinds: without(CHANGE_KINDS, "modified") }
 ];
+var COUNT_COLUMNS = COLUMN_GROUPS.flatMap(
+  ({ count, kinds }) => kinds.map((kind) => ({ kind, count }))
+);
 var githubDiffTotalsSchema = external_exports.object({
   additions: external_exports.number(),
   deletions: external_exports.number()
@@ -50039,7 +50044,6 @@ var linesChangedStr = ({
     `\u2212${removed}`
   ].filter(Boolean).join(" / ")}`
 );
-var mdRow = (cells) => `| ${cells.join(" | ")} |`;
 var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
 var countCell = (kind, count, { emphasise = false, color }) => {
   if (!color) return emphasise ? bold(count) : `${count}`;
@@ -50048,19 +50052,23 @@ var countCell = (kind, count, { emphasise = false, color }) => {
     emphasise ? `\\mathbf{${count}}` : count
   );
 };
-var headerCell = ({ kind, count }, { color }) => {
+var signCell = (kind, { color }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
-  return `${color ? coloredLatex(kindColor, latex) : sign} ${count}`;
+  return th(color ? coloredLatex(kindColor, latex) : sign, { align: "center" });
 };
-var row = (label, tally, { boldCode = false, color }) => mdRow([
-  label,
+var row = (label, tally, { boldCode = false, color }) => [
+  td(label),
   ...COUNT_COLUMNS.map(
-    ({ kind, count }) => countCell(kind, tally[kind][count], {
-      emphasise: boldCode && count === "code",
-      color
-    })
+    ({ kind, count }) => td(
+      countCell(kind, tally[kind][count], {
+        emphasise: boldCode && count === "code",
+        color
+      }),
+      { align: "right" }
+    )
   )
-]);
+].join("");
+var COLUMN_COUNT = 1 + COUNT_COLUMNS.length;
 function renderMarkdown(tally, {
   githubTotals: ghTotals,
   colorCounts = true
@@ -50085,28 +50093,38 @@ function renderMarkdown(tally, {
   });
   if (shown.length > 1)
     rows.push(row(bold("Total"), tally.total, { color: colorCounts }));
-  lines.push(
-    [
-      mdRow([
-        "",
-        ...COUNT_COLUMNS.map(
-          (column) => headerCell(column, { color: colorCounts })
-        )
-      ]),
-      mdRow(["---", ...COUNT_COLUMNS.map(() => "---:")]),
-      ...rows
-    ].join("\n")
-  );
   if (ghTotals)
-    lines.push(
-      italic(
-        linesChangedStr({
-          label: "GitHub reports",
-          added: ghTotals.additions,
-          removed: ghTotals.deletions
-        })
+    rows.push(
+      td(
+        italic(
+          linesChangedStr({
+            label: "GitHub reports",
+            added: ghTotals.additions,
+            removed: ghTotals.deletions
+          })
+        ),
+        { colspan: COLUMN_COUNT, align: "center" }
       )
     );
+  lines.push(
+    [
+      "<table>",
+      // group header row: what each span of sign columns counts
+      tr(
+        td("") + COLUMN_GROUPS.map(
+          ({ count, kinds }) => th(count, { colspan: kinds.length, align: "center" })
+        ).join("")
+      ),
+      // sign header row, one cell under each column of its group
+      tr(
+        td("") + COUNT_COLUMNS.map(
+          ({ kind }) => signCell(kind, { color: colorCounts })
+        ).join("")
+      ),
+      ...rows.map(tr),
+      "</table>"
+    ].join("\n")
+  );
   lines.push(
     `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
 ${linesChangedStr({ label: "Blank lines are excluded above:", ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`

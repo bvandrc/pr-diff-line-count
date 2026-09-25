@@ -20,16 +20,20 @@ const GLOBS = {
   config: ['**/*.json', '**/*.yml'],
 } as const satisfies CategoryGlobs
 
-/** Every table row, as the cells of each are written. */
+/**
+ * Every table row, as the cells of each are written.
+ *
+ * A cell is matched across lines, a colored one being opened out over its own so
+ * its LaTeX parses as markdown.
+ */
 const tableRows = (markdown: string) =>
   markdown
-    .split('\n')
-    .filter((line) => line.startsWith('|'))
-    .map((line) =>
-      line
-        .split('|')
-        .slice(1, -1)
-        .map((cell) => cell.trim())
+    .split('<tr>')
+    .slice(1)
+    .map((rowHtml) =>
+      [...rowHtml.matchAll(/<t[dh][^>]*>(.*?)<\/t[dh]>/gs)].map(([, cell]) =>
+        cell.trim()
+      )
     )
 
 /**
@@ -42,7 +46,7 @@ const stripMarkup = (cell: string) =>
   cell
     .replaceAll(/\$\{\\color\{[^}]+\}(.*?)\}\$/g, '$1')
     .replace(/^\\mathbf\{(.*)\}$/, '$1')
-    .replaceAll(/\*\*|_/g, '')
+    .replaceAll(/<\/?(strong|em)>/g, '')
 
 /** The cells of one table row, so a case can assert numbers without the markup. */
 const rowCells = (markdown: string, label: string) =>
@@ -117,7 +121,9 @@ describe('renderMarkdown', () => {
       { githubTotals: { additions: 329, deletions: 144 }, colorCounts: false }
     )
 
-    expect(markdown).toContain(unbreakable('GitHub reports +329 / −144'))
+    expect(stripMarkup(markdown)).toContain(
+      unbreakable('GitHub reports +329 / −144')
+    )
   })
 
   it('leaves the totals row out when GitHub reports nothing', () => {

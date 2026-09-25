@@ -12,16 +12,170 @@ The result comes back three ways:
 
 The comment, and the summary table with it:
 
-|  |  | code |  | comment |  |
-| --- | --: | --: | --: | --: | --: |
-|  | ${\color{#2da44e}+}$ | ${\color{#bf8700}\sim}$ | ${\color{#e5534b}-}$ | ${\color{#2da44e}+}$ | ${\color{#e5534b}-}$ |
-| **Source** | ${\color{#2da44e}\mathbf{91}}$ | ${\color{#bf8700}\mathbf{68}}$ | ${\color{#e5534b}\mathbf{9}}$ | ${\color{#2da44e}106}$ | ${\color{#e5534b}42}$ |
-| Tests | ${\color{#2da44e}12}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}4}$ | ${\color{#e5534b}0}$ |
-| Docs | ${\color{#2da44e}6}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}0}$ | ${\color{#e5534b}0}$ |
-| Config | ${\color{#2da44e}8}$ | ${\color{#bf8700}0}$ | ${\color{#e5534b}0}$ | ${\color{#2da44e}0}$ | ${\color{#e5534b}0}$ |
-| **Total** | ${\color{#2da44e}117}$ | ${\color{#bf8700}68}$ | ${\color{#e5534b}9}$ | ${\color{#2da44e}110}$ | ${\color{#e5534b}42}$ |
+<table>
+<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
+<tr><td></td>
+<th align="center">
 
-_GitHub reports ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$_
+${\color{#2da44e}+}$
+
+</th>
+<th align="center">
+
+${\color{#bf8700}\sim}$
+
+</th>
+<th align="center">
+
+${\color{#e5534b}-}$
+
+</th>
+<th align="center">
+
+${\color{#2da44e}+}$
+
+</th>
+<th align="center">
+
+${\color{#e5534b}-}$
+
+</th></tr>
+<tr><td><strong>Source</strong></td>
+<td align="right">
+
+${\color{#2da44e}\mathbf{91}}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}\mathbf{68}}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}\mathbf{9}}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}106}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}42}$
+
+</td></tr>
+<tr><td>Tests</td>
+<td align="right">
+
+${\color{#2da44e}12}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}4}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td></tr>
+<tr><td>Docs</td>
+<td align="right">
+
+${\color{#2da44e}6}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td></tr>
+<tr><td>Config</td>
+<td align="right">
+
+${\color{#2da44e}8}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}0}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}0}$
+
+</td></tr>
+<tr><td><strong>Total</strong></td>
+<td align="right">
+
+${\color{#2da44e}117}$
+
+</td>
+<td align="right">
+
+${\color{#bf8700}68}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}9}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}110}$
+
+</td>
+<td align="right">
+
+${\color{#e5534b}42}$
+
+</td></tr>
+<tr><td colspan="6" align="center">
+
+<em>GitHub reports</em> ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$
+
+</td></tr>
+</table>
 
 <sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's. Blank lines are excluded above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
 
@@ -104,7 +258,7 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
     - **green** — lines added
     - **amber** — lines changed in place
     - **red** — lines removed
-  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. It is also why `code` and `comment` sit in the middle column of the span each names rather than spanning it: a real spanning header needs an HTML table's `colspan`, and nothing inside an HTML block is read as markdown, LaTeX included.
+  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. Keeping the spanning `code` / `comment` header needs an HTML table, since a markdown table has no `colspan`, and a colored cell there has to be opened out over its own lines for its LaTeX to be read as LaTeX rather than as its own source. That is why the rendered output is several times the size of the table it draws.
   - LaTeX takes no theme, so a color cannot follow light and dark. The three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
   - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
 - **`~ code`** — lines changed in place. cloc counts a changed line once, rather than as an add plus a delete, which is why these columns don't sum to GitHub's own `+/−`.

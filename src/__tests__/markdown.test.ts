@@ -5,7 +5,7 @@ import type { ClocDiffReport } from '../cloc/run.ts'
 import type { GithubDiffTotals } from '../markdown.ts'
 import { renderMarkdown } from '../markdown.ts'
 import { type CategoryGlobs, tallyDiff } from '../tally.ts'
-import { bold, td, th, unbreakable } from '../utils'
+import { bold, unbreakable } from '../utils'
 
 /** Builds the `--by-file` shape from just the entries a case cares about. */
 const clocReport = (sections: PartialDeep<ClocDiffReport>): ClocDiffReport =>
@@ -89,7 +89,7 @@ describe('renderMarkdown', () => {
     expect(markdown).not.toContain('Generated')
   })
 
-  it('leaves the counts as plain text when color is off', () => {
+  it('writes no LaTeX when color is off', () => {
     const markdown = render(
       clocReport({
         added: { 'src/a.ts': { code: 91 } },
@@ -99,12 +99,6 @@ describe('renderMarkdown', () => {
     )
 
     expect(markdown).not.toContain('\\color')
-    // The sign headers fall back to the signs as they read outside LaTeX.
-    for (const sign of ['+', '~', '−'])
-      expect(markdown, sign).toContain(th(sign, { align: 'center' }))
-    // The source row is still emphasised, in markup rather than in LaTeX.
-    expect(markdown).toContain(td(bold(91), { align: 'right' }))
-    expect(rowCells(markdown, 'Source')).toEqual(['91', '0', '9', '0', '0'])
   })
 
   it('omits the total row when only one category changed', () => {

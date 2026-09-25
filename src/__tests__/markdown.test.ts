@@ -33,11 +33,11 @@ const tableRows = (markdown: string) =>
     )
 
 /**
- * A cell with the colour, emphasis, and maths taken off, leaving what it says.
+ * A cell with the color, emphasis, and LaTeX taken off, leaving what it says.
  *
- * The colour goes by pattern rather than by value, so which hex a kind reads in
+ * The color goes by pattern rather than by value, so which hex a kind reads in
  * stays `markdown.ts`'s business. Unanchored, because a header holds its sign in
- * maths and the count it names outside.
+ * LaTeX and the count it names outside.
  */
 const stripMarkup = (cell: string) =>
   cell
@@ -86,7 +86,7 @@ describe('renderMarkdown', () => {
     expect(markdown).not.toContain('Generated')
   })
 
-  it('leaves the counts as plain text when colour is off', () => {
+  it('leaves the counts as plain text when color is off', () => {
     const markdown = render(
       clocReport({
         added: { 'src/a.ts': { code: 91 } },
@@ -96,9 +96,9 @@ describe('renderMarkdown', () => {
     )
 
     expect(markdown).not.toContain('color')
-    // The headers fall back to the signs as they read outside maths.
+    // The headers fall back to the signs as they read outside LaTeX.
     expect(markdown).toContain('| + code | ~ code | − code |')
-    // The source row is still emphasised, in markup rather than in maths.
+    // The source row is still emphasised, in markup rather than in LaTeX.
     expect(markdown).toContain(`| ${bold(91)} |`)
     expect(rowCells(markdown, 'Source')).toEqual(['91', '0', '9', '0', '0'])
   })

@@ -14,7 +14,7 @@ inputs:
     description: Post the table as a sticky pull request comment.
     default: 'true'
   color-counts:
-    description: Colour the counts by the kind of change. Needs them set as LaTeX maths, the one thing GitHub colours; `false` leaves them plain, for where the `markdown` output goes to a renderer that does no maths.
+    description: Color the counts by the kind of change. Needs them set as LaTeX, the one thing GitHub colors; `false` leaves them plain, for where the `markdown` output goes to a renderer that does no LaTeX.
     default: 'true'
   base-sha:
     description: Revision to count from. Defaults to the pull request's base; the merge base of the two is what actually gets counted.

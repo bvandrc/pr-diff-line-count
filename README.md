@@ -95,7 +95,7 @@ CI here runs that path on every pull request, under `contents: read` alone, so i
 | --- | --- | --- |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. Needs `pull-requests: write`. |
 | `comment` | `true` | Post the table as a sticky comment. Set `false` to use only the outputs and job summary. |
-| `color-counts` | `true` | Colour the counts by the kind of change. Set `false` to keep them as plain text. |
+| `color-counts` | `true` | Color the counts by the kind of change. Set `false` to keep them as plain text. |
 | `base-sha` | the PR's base | Revision to count from. The merge base of the two is what gets counted. |
 | `head-sha` | the PR's head | Revision to count to. |
 
@@ -105,13 +105,13 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
 
 - **`+ code` / `− code`** — lines added and removed, excluding comments and blank lines.
 - **Colors**
-  - Each count, and the sign heading its column, reads in the colour of its kind of change:
+  - Each count, and the sign heading its column, reads in the color of its kind of change:
     - **green** — lines added
     - **amber** — lines changed in place
     - **red** — lines removed
-  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX maths — the one thing it will colour. They still select and copy as their own digits.
-  - Maths takes no theme, so a colour cannot follow light and dark. The three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
-  - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no maths.
+  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits.
+  - LaTeX takes no theme, so a color cannot follow light and dark. The three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
+  - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
 - **`~ code`** — lines changed in place. cloc counts a changed line once, rather than as an add plus a delete, which is why these columns don't sum to GitHub's own `+/−`.
 - **`+ comment` / `− comment`** — comment lines, parsed per language. The headline deliberately leaves them out.
 - Blank lines are counted but kept to a footnote.

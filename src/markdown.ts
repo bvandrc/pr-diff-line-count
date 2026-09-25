@@ -24,30 +24,29 @@ const CATEGORY_LABELS = {
 } as const satisfies Record<FileCategory, string>
 
 /**
- * The sign each kind of change is headed with, and the colour its counts read
- * in.
+ * The sign each kind of change is headed with, and the color its counts read in.
  *
  * GitHub strips `style` and `color` out of the HTML it renders in a comment or
- * a job summary, so LaTeX math is the only thing left that colours text. Math
- * takes one colour whatever the theme, hence mid tones rather than GitHub's own
- * diff green and red, each of which only works against one background.
+ * a job summary, so LaTeX is the only thing left that colors text. LaTeX takes
+ * one color whatever the theme, hence mid tones rather than GitHub's own diff
+ * green and red, each of which only works against one background.
  *
- * `modified` is amber, the colour a diff tool usually marks a change in place
+ * `modified` is amber, the color a diff tool usually marks a change in place
  * with -- it reads as neither an addition nor a removal, which is the point.
- * Leaving it alone was the alternative, but an uncoloured count is plain text
- * beside maths, so a row would mix two typefaces.
+ * Leaving it alone was the alternative, but an uncolored count is plain text
+ * beside LaTeX, so a row would mix two typefaces.
  *
- * Each sign is spelled twice because a header carries it into the maths: a
+ * Each sign is spelled twice because a header carries it into the LaTeX: a
  * literal `~` there is a non-breaking space, and `−` (U+2212) is not an
  * operator KaTeX knows, so neither survives being dropped in as written.
  */
 const CHANGE_KIND_COLUMNS = {
-  added: { sign: '+', maths: '+', colour: '#2da44e' },
-  modified: { sign: '~', maths: '\\sim', colour: '#bf8700' },
-  removed: { sign: '−', maths: '-', colour: '#e5534b' },
+  added: { sign: '+', latex: '+', color: '#2da44e' },
+  modified: { sign: '~', latex: '\\sim', color: '#bf8700' },
+  removed: { sign: '−', latex: '-', color: '#e5534b' },
 } as const satisfies Record<
   ChangeKind,
-  { sign: string; maths: string; colour: string }
+  { sign: string; latex: string; color: string }
 >
 
 /**
@@ -112,52 +111,52 @@ const linesChangedStr = ({
 /** One table row, from the cells it holds. */
 const mdRow = (cells: (string | number)[]) => `| ${cells.join(' | ')} |`
 
-/** One run of coloured LaTeX, the braces scoping the colour to what it holds. */
-const colouredMaths = (colour: string, body: string | number) =>
-  `\${\\color{${colour}}${body}}$`
+/** One run of colored LaTeX, the braces scoping the color to what it holds. */
+const coloredLatex = (color: string, body: string | number) =>
+  `\${\\color{${color}}${body}}$`
 
-/** One count, in the colour its kind reads in unless colour is off. */
+/** One count, in the color its kind reads in unless color is off. */
 const countCell = (
   kind: ChangeKind,
   count: number,
-  { emphasise = false, colour }: { emphasise?: boolean; colour: boolean }
+  { emphasise = false, color }: { emphasise?: boolean; color: boolean }
 ) => {
-  if (!colour) return emphasise ? bold(count) : `${count}`
-  // Emphasis has to be LaTeX too: `<strong>` around maths leaves the number
+  if (!color) return emphasise ? bold(count) : `${count}`
+  // Emphasis has to be LaTeX too: `<strong>` around LaTeX leaves the number
   // itself unbolded.
-  return colouredMaths(
-    CHANGE_KIND_COLUMNS[kind].colour,
+  return coloredLatex(
+    CHANGE_KIND_COLUMNS[kind].color,
     emphasise ? `\\mathbf{${count}}` : count
   )
 }
 
 /**
- * One column's header: its sign in the colour that column's counts read in,
- * then the count it reports.
+ * One column's header: its sign in the color that column's counts read in, then
+ * the count it reports.
  *
- * Only the sign takes the colour. `code` and `comment` are words, and a word in
- * maths is set in a different face from the rest of the header.
+ * Only the sign takes the color. `code` and `comment` are words, and a word in
+ * LaTeX is set in a different face from the rest of the header.
  */
 const headerCell = (
   { kind, count }: (typeof COUNT_COLUMNS)[number],
-  { colour }: { colour: boolean }
+  { color }: { color: boolean }
 ) => {
-  const { sign, maths, colour: kindColour } = CHANGE_KIND_COLUMNS[kind]
-  return `${colour ? colouredMaths(kindColour, maths) : sign} ${count}`
+  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
+  return `${color ? coloredLatex(kindColor, latex) : sign} ${count}`
 }
 
 /** The source row carries the headline counts, so its code cells are bold. */
 const row = (
   label: string,
   tally: CategoryTally,
-  { boldCode = false, colour }: { boldCode?: boolean; colour: boolean }
+  { boldCode = false, color }: { boldCode?: boolean; color: boolean }
 ) =>
   mdRow([
     label,
     ...COUNT_COLUMNS.map(({ kind, count }) =>
       countCell(kind, tally[kind][count], {
         emphasise: boldCode && count === 'code',
-        colour,
+        color,
       })
     ),
   ])
@@ -168,12 +167,12 @@ const row = (
  * Returns markdown ready to post or display, with untouched categories left out
  * of the table entirely.
  *
- * `colorCounts` sets the counts as LaTeX maths, which is what lets them carry a
- * colour -- see `CHANGE_KIND_COLUMNS` for why nothing cheaper colours text on
- * GitHub. Turning it off leaves them plain, for where the `markdown` output is
- * rendered by something that does not do maths. Either way the table is markdown
- * rather than HTML, since maths does not render inside an HTML block; that is
- * what the spanning header and GitHub's own totals row were traded for.
+ * `colorCounts` sets the counts as LaTeX, which is what lets them carry a color
+ * -- see `CHANGE_KIND_COLUMNS` for why nothing cheaper colors text on GitHub.
+ * Turning it off leaves them plain, for where the `markdown` output is rendered
+ * by something that does no LaTeX. Either way the table is markdown rather than
+ * HTML, since LaTeX does not render inside an HTML block; that is what the
+ * spanning header and GitHub's own totals row were traded for.
  */
 export function renderMarkdown(
   tally: DiffTally,
@@ -203,18 +202,18 @@ export function renderMarkdown(
     const label = CATEGORY_LABELS[category]
     return row(isSource ? bold(label) : label, tally.byCategory[category], {
       boldCode: isSource,
-      colour: colorCounts,
+      color: colorCounts,
     })
   })
   if (shown.length > 1)
-    rows.push(row(bold('Total'), tally.total, { colour: colorCounts }))
+    rows.push(row(bold('Total'), tally.total, { color: colorCounts }))
 
   lines.push(
     [
       mdRow([
         '',
         ...COUNT_COLUMNS.map((column) =>
-          headerCell(column, { colour: colorCounts })
+          headerCell(column, { color: colorCounts })
         ),
       ]),
       mdRow(['---', ...COUNT_COLUMNS.map(() => '---:')]),

@@ -50011,9 +50011,9 @@ var CATEGORY_LABELS = {
   config: "Config"
 };
 var CHANGE_KIND_COLUMNS = {
-  added: { sign: "+", maths: "+", colour: "#2da44e" },
-  modified: { sign: "~", maths: "\\sim", colour: "#bf8700" },
-  removed: { sign: "\u2212", maths: "-", colour: "#e5534b" }
+  added: { sign: "+", latex: "+", color: "#2da44e" },
+  modified: { sign: "~", latex: "\\sim", color: "#bf8700" },
+  removed: { sign: "\u2212", latex: "-", color: "#e5534b" }
 };
 var COUNT_COLUMNS = [
   ...CHANGE_KINDS.map((kind) => ({ kind, count: "code" })),
@@ -50040,24 +50040,24 @@ var linesChangedStr = ({
   ].filter(Boolean).join(" / ")}`
 );
 var mdRow = (cells) => `| ${cells.join(" | ")} |`;
-var colouredMaths = (colour, body) => `\${\\color{${colour}}${body}}$`;
-var countCell = (kind, count, { emphasise = false, colour }) => {
-  if (!colour) return emphasise ? bold(count) : `${count}`;
-  return colouredMaths(
-    CHANGE_KIND_COLUMNS[kind].colour,
+var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
+var countCell = (kind, count, { emphasise = false, color }) => {
+  if (!color) return emphasise ? bold(count) : `${count}`;
+  return coloredLatex(
+    CHANGE_KIND_COLUMNS[kind].color,
     emphasise ? `\\mathbf{${count}}` : count
   );
 };
-var headerCell = ({ kind, count }, { colour }) => {
-  const { sign, maths, colour: kindColour } = CHANGE_KIND_COLUMNS[kind];
-  return `${colour ? colouredMaths(kindColour, maths) : sign} ${count}`;
+var headerCell = ({ kind, count }, { color }) => {
+  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
+  return `${color ? coloredLatex(kindColor, latex) : sign} ${count}`;
 };
-var row = (label, tally, { boldCode = false, colour }) => mdRow([
+var row = (label, tally, { boldCode = false, color }) => mdRow([
   label,
   ...COUNT_COLUMNS.map(
     ({ kind, count }) => countCell(kind, tally[kind][count], {
       emphasise: boldCode && count === "code",
-      colour
+      color
     })
   )
 ]);
@@ -50080,17 +50080,17 @@ function renderMarkdown(tally, {
     const label = CATEGORY_LABELS[category];
     return row(isSource ? bold(label) : label, tally.byCategory[category], {
       boldCode: isSource,
-      colour: colorCounts
+      color: colorCounts
     });
   });
   if (shown.length > 1)
-    rows.push(row(bold("Total"), tally.total, { colour: colorCounts }));
+    rows.push(row(bold("Total"), tally.total, { color: colorCounts }));
   lines.push(
     [
       mdRow([
         "",
         ...COUNT_COLUMNS.map(
-          (column) => headerCell(column, { colour: colorCounts })
+          (column) => headerCell(column, { color: colorCounts })
         )
       ]),
       mdRow(["---", ...COUNT_COLUMNS.map(() => "---:")]),

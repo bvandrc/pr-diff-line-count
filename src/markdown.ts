@@ -65,10 +65,9 @@ const CHANGE_KIND_COLUMNS = {
 >
 
 /**
- * The count columns, grouped under the header each group spans. The order is the
- * order a row's cells are built in.
+ * The count columns, grouped under the header each group spans.
  *
- * A group's label is the count it reads, since that is what the header says.
+ * The order is the order a row's cells are built in. A group's label is the count it reads, since that is what the header says.
  * `comment` leaves `modified` out, cloc's in-place count being a code one.
  */
 const COLUMN_GROUPS = [
@@ -170,12 +169,7 @@ const linesChangedStr = ({
   return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`)
 }
 
-/**
- * One count's cell, in the color its kind reads in unless color is off.
- *
- * A colored count is LaTeX, so it needs a blank line either side of it to be
- * read as LaTeX at all -- see `betweenBlankLines`.
- */
+/** One count's cell, in the color its kind reads in unless color is off. */
 const countCell = (
   kind: ChangeKind,
   count: number,
@@ -183,7 +177,9 @@ const countCell = (
 ) =>
   td(
     color
-      ? betweenBlankLines(
+      ? // A colored count is LaTeX, so it needs a blank line either side of it
+        // to be read as LaTeX at all -- see `betweenBlankLines`.
+        betweenBlankLines(
           coloredLatex(
             countColor(kind, count),
             emphasise ? boldLatex(count) : count
@@ -201,14 +197,13 @@ const countCell = (
  *
  * Only the sign, since the count it reports is named by the group header
  * spanning it.
- *
- * A `<td>` rather than the `<th>` the row deserves: a colored sign is written
- * between blank lines, which leaves its content a paragraph, and the margin a
- * paragraph carries is reset inside a `<td>` but not inside a `<th>` -- so a
- * `<th>` row of them stands taller than the rows of counts below it.
  */
 const signCell = (kind: ChangeKind, { color }: { color: boolean }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
+  // A `<td>` rather than the `<th>` the row deserves: a colored sign is written
+  // between blank lines, which leaves its content a paragraph, and the margin a
+  // paragraph carries is reset inside a `<td>` but not inside a `<th>` -- so a
+  // `<th>` row of them stands taller than the rows of counts below it.
   return td(color ? betweenBlankLines(coloredLatex(kindColor, latex)) : sign, {
     align: 'center',
   })

@@ -242,16 +242,18 @@ const addInto = (target: ClocCounts, source: ClocCounts) => {
   for (const field of COUNT_FIELDS) target[field] += source[field]
 }
 
-// because plenty of real paths are under `.github/` or `.config/` and a glob
-// that silently skips them would undercount without saying so.
+// Dotfiles match too, because plenty of real paths are under `.github/` or
+// `.config/` and a glob that silently skips them would undercount without
+// saying so.
 const MATCH_OPTIONS = { dot: true }
 
 /**
  * Matches one category's globs, with a `!`-prefixed glob excluding a path the
- * rest matched. picomatch ORs an array, so a `!` glob left in one matches
- * every path the others don't -- the two halves have to be run apart.
+ * rest matched.
  */
 const categoryMatcher = (globs: string[]) => {
+  // picomatch ORs an array, so a `!` glob left in one matches every path the
+  // others don't -- the two halves have to be run apart.
   const [excluded, included] = partition(globs, (glob) => glob.startsWith('!'))
   const isIncluded = picomatch(included, MATCH_OPTIONS)
   const isExcluded = picomatch(

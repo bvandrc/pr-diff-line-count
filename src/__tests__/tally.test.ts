@@ -11,13 +11,15 @@ import {
 } from '../tally.ts'
 
 /** Builds the `--by-file` shape from just the entries a case cares about. */
-const clocReport = (sections: PartialDeep<ClocDiffReport>): ClocDiffReport =>
+const buildClocReport = (
+  sections: PartialDeep<ClocDiffReport>
+): ClocDiffReport =>
   mapValues(sections, (files) =>
     mapValues(files ?? {}, (c) => ({ code: 0, comment: 0, blank: 0, ...c }))
   )
 
 /** Each category's added code, which is what most of these cases turn on. */
-const codePerCategory = (tally: DiffTally) =>
+const getCodePerCategory = (tally: DiffTally) =>
   mapValues(tally.byCategory, (t) => t.added.code)
 
 const GLOBS = {
@@ -30,7 +32,7 @@ const GLOBS = {
 describe('tallyDiff', () => {
   it('totals correctly', () => {
     const tally = tallyDiff(
-      clocReport({
+      buildClocReport({
         added: {
           'src/thing.ts': { code: 10, comment: 40, blank: 3 },
           'src/thing2.ts': { code: 10, comment: 40, blank: 3 },
@@ -44,7 +46,7 @@ describe('tallyDiff', () => {
 
   it('routes each path to its category, and anything unmatched to source', () => {
     const tally = tallyDiff(
-      clocReport({
+      buildClocReport({
         added: {
           'src/thing.ts': { code: 5 },
           'src/__tests__/thing.ts': { code: 30, comment: 40, blank: 3 },
@@ -59,7 +61,7 @@ describe('tallyDiff', () => {
     )
 
     // `Makefile` matches no glob, so it lands in source alongside thing.ts.
-    expect(codePerCategory(tally)).toEqual({
+    expect(getCodePerCategory(tally)).toEqual({
       source: 8,
       tests: 50,
       generated: 912,
@@ -70,13 +72,13 @@ describe('tallyDiff', () => {
 
   it('lets the first matching category win', () => {
     const tally = tallyDiff(
-      clocReport({
+      buildClocReport({
         added: { 'db/migrations/__tests__/seed.test.ts': { code: 9 } },
       }),
       GLOBS
     )
 
-    expect(codePerCategory(tally)).toEqual({
+    expect(getCodePerCategory(tally)).toEqual({
       source: 0,
       tests: 9,
       generated: 0,
@@ -87,19 +89,19 @@ describe('tallyDiff', () => {
 
   it('matches dotfile directories, which a default glob would skip', () => {
     const tally = tallyDiff(
-      clocReport({ added: { '.github/workflows/ci.yml': { code: 20 } } }),
+      buildClocReport({ added: { '.github/workflows/ci.yml': { code: 20 } } }),
       {
         ...GLOBS,
         config: ['**/.github/**'],
       }
     )
 
-    expect(codePerCategory(tally)).toMatchObject({ config: 20, source: 0 })
+    expect(getCodePerCategory(tally)).toMatchObject({ config: 20, source: 0 })
   })
 
   it('lets a `!` glob exclude a path the rest of its category matched', () => {
     const tally = tallyDiff(
-      clocReport({
+      buildClocReport({
         added: { 'notes.txt': { code: 6 }, 'requirements.txt': { code: 4 } },
       }),
       {
@@ -109,7 +111,7 @@ describe('tallyDiff', () => {
       }
     )
 
-    expect(codePerCategory(tally)).toEqual({
+    expect(getCodePerCategory(tally)).toEqual({
       source: 0,
       tests: 0,
       generated: 0,
@@ -121,17 +123,17 @@ describe('tallyDiff', () => {
   it('excludes against every include in the category, not just one', () => {
     // `docs/robots.txt` matches `**/docs/**` too, and the `!` glob still wins.
     const tally = tallyDiff(
-      clocReport({ added: { 'docs/robots.txt': { code: 1 } } }),
+      buildClocReport({ added: { 'docs/robots.txt': { code: 1 } } }),
       { ...GLOBS, docs: ['**/*.txt', '**/docs/**', '!**/robots.txt'] }
     )
 
     // Nothing else claims it, so it falls through to the source fallback.
-    expect(codePerCategory(tally)).toMatchObject({ docs: 0, source: 1 })
+    expect(getCodePerCategory(tally)).toMatchObject({ docs: 0, source: 1 })
   })
 
   it("ignores cloc's SUM and header siblings of the per-file entries", () => {
     const tally = tallyDiff(
-      clocReport({
+      buildClocReport({
         added: {
           'src/a.ts': { code: 5 },
           SUM: { code: 5 },
@@ -146,12 +148,12 @@ describe('tallyDiff', () => {
 
   it('reports every category, zeroed where the diff touched nothing', () => {
     const tally = tallyDiff(
-      clocReport({ added: { 'src/a.ts': { code: 2 } } }),
+      buildClocReport({ added: { 'src/a.ts': { code: 2 } } }),
       GLOBS
     )
 
     // A caller reading one category never has to tell 0 from a missing key.
-    expect(codePerCategory(tally)).toEqual({
+    expect(getCodePerCategory(tally)).toEqual({
       source: 2,
       tests: 0,
       generated: 0,
@@ -163,7 +165,7 @@ describe('tallyDiff', () => {
   it('sums each change kind separately', () => {
     const FILE = 'src/a.ts'
     const tally = tallyDiff(
-      clocReport({
+      buildClocReport({
         added: { [FILE]: { code: 5 } },
         modified: { [FILE]: { code: 3 } },
         removed: { [FILE]: { code: 4 } },
@@ -171,21 +173,21 @@ describe('tallyDiff', () => {
       GLOBS
     )
 
-    expect([
-      tally.total.added.code,
-      tally.total.modified.code,
-      tally.total.removed.code,
-    ]).toEqual([5, 3, 4])
+    expect(tally.total).toMatchObject({
+      added: { code: 5 },
+      modified: { code: 3 },
+      removed: { code: 4 },
+    })
   })
 })
 
-describe('the shipped patterns', () => {
+describe('DEFAULT_CATEGORY_GLOBS', () => {
   // Not a test of glob matching: each case pins one pattern in our own list,
   // and the .json pair pins the precedence between two of them. Driven by the
   // constant the action runs on, so a case is a claim about what users get.
-  const categoryOf = (file: string) => {
+  const getCategory = (file: string) => {
     const tally = tallyDiff(
-      clocReport({ added: { [file]: { code: 1 } } }),
+      buildClocReport({ added: { [file]: { code: 1 } } }),
       DEFAULT_CATEGORY_GLOBS
     )
     return FILE_CATEGORIES.find(
@@ -287,6 +289,6 @@ describe('the shipped patterns', () => {
     ['public/llms-full.txt', 'config'],
     ['MANIFEST.in', 'config'],
   ])('classifies %s as %s', (file, expected) => {
-    expect(categoryOf(file)).toBe(expected)
+    expect(getCategory(file)).toBe(expected)
   })
 })

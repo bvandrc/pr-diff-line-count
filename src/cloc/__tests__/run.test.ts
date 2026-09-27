@@ -16,13 +16,13 @@ describe('runClocDiff', () => {
   let repo: string
   let cache: string
 
-  const git = (...args: string[]) =>
+  const runGit = (...args: string[]) =>
     execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim()
 
   const commit = (message: string) => {
-    git('add', '-A')
-    git('commit', '-q', '-m', message)
-    return git('rev-parse', 'HEAD')
+    runGit('add', '-A')
+    runGit('commit', '-q', '-m', message)
+    return runGit('rev-parse', 'HEAD')
   }
 
   const write = (file: string, body: string) =>
@@ -35,9 +35,9 @@ describe('runClocDiff', () => {
     process.env.RUNNER_TOOL_CACHE = cache
     process.env.RUNNER_TEMP = cache
 
-    git('init', '-q', '-b', 'main')
-    git('config', 'user.email', 'test@example.com')
-    git('config', 'user.name', 'Test')
+    runGit('init', '-q', '-b', 'main')
+    runGit('config', 'user.email', 'test@example.com')
+    runGit('config', 'user.name', 'Test')
   })
 
   afterAll(() => {
@@ -113,19 +113,18 @@ const c = 3
     write('big.ts', BODY)
     const base = commit('add a file worth moving')
 
-    git('mv', 'big.ts', 'moved.ts')
+    runGit('mv', 'big.ts', 'moved.ts')
     const head = commit('move it')
 
     const report = await countBetween(base, head)
     const added = sumBy(Object.values(report.added ?? {}), (c) => c.code)
     const removed = sumBy(Object.values(report.removed ?? {}), (c) => c.code)
 
-    expect(added).toBe(0)
-    expect(removed).toBe(0)
+    expect({ added, removed }).toEqual({ added: 0, removed: 0 })
   }, 60_000)
 
   it('gives a binary file no counts of its own', async () => {
-    const base = git('rev-parse', 'HEAD')
+    const base = runGit('rev-parse', 'HEAD')
     write('logo.bin', '\u0000\u0001\u0002')
     const head = commit('add a binary file')
 
@@ -142,21 +141,21 @@ const c = 3
     // Needs its own repository, since the shared one holds countable files.
     const { bare, base, head } = (() => {
       const dir = mkdtempSync(join(tmpdir(), 'cloc-bare-'))
-      const bareGit = (...args: string[]) =>
+      const runBareGit = (...args: string[]) =>
         execFileSync('git', args, { cwd: dir, encoding: 'utf8' }).trim()
 
-      bareGit('init', '-q', '-b', 'main')
-      bareGit('config', 'user.email', 'test@example.com')
-      bareGit('config', 'user.name', 'Test')
+      runBareGit('init', '-q', '-b', 'main')
+      runBareGit('config', 'user.email', 'test@example.com')
+      runBareGit('config', 'user.name', 'Test')
       writeFileSync(join(dir, 'one.bin'), '\u0000\u0001')
-      bareGit('add', '-A')
-      bareGit('commit', '-q', '-m', 'binary only')
-      const from = bareGit('rev-parse', 'HEAD')
+      runBareGit('add', '-A')
+      runBareGit('commit', '-q', '-m', 'binary only')
+      const from = runBareGit('rev-parse', 'HEAD')
       writeFileSync(join(dir, 'two.bin'), '\u0002\u0003')
-      bareGit('add', '-A')
-      bareGit('commit', '-q', '-m', 'another binary')
+      runBareGit('add', '-A')
+      runBareGit('commit', '-q', '-m', 'another binary')
 
-      return { bare: dir, base: from, head: bareGit('rev-parse', 'HEAD') }
+      return { bare: dir, base: from, head: runBareGit('rev-parse', 'HEAD') }
     })()
 
     try {

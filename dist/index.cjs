@@ -50076,10 +50076,14 @@ var linesChangedStr = ({
   return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`);
 };
 var countCell = (kind, count, { emphasise = false, color }) => td(
-  color ? betweenBlankLines(
-    coloredLatex(
-      countColor(kind, count),
-      emphasise ? boldLatex(count) : count
+  color ? (
+    // A colored count is LaTeX, so it needs a blank line either side of it
+    // to be read as LaTeX at all -- see `betweenBlankLines`.
+    betweenBlankLines(
+      coloredLatex(
+        countColor(kind, count),
+        emphasise ? boldLatex(count) : count
+      )
     )
   ) : emphasise ? bold(count) : count,
   { align: "right" }

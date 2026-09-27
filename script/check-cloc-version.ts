@@ -30,7 +30,7 @@ const releaseSchema = z.object({ tag_name: z.string().min(1) })
 const scriptUrl = (version: string) =>
   `https://github.com/AlDanial/cloc/releases/download/v${version}/cloc-${version}.pl`
 
-/** Upstream tags releases `v2.10`; `version.json` and the asset name both drop the `v`. */
+/** The version number of cloc's latest upstream release, as `version.json` spells it. */
 async function fetchLatestVersion(): Promise<string> {
   const response = await fetch(LATEST_RELEASE, {
     headers: {
@@ -47,6 +47,8 @@ async function fetchLatestVersion(): Promise<string> {
 
   const { tag_name } = releaseSchema.parse(await response.json())
 
+  // Upstream tags releases `v2.10`; `version.json` and the asset name both
+  // drop the `v`.
   return tag_name.replace(/^v/, '')
 }
 

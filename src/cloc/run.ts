@@ -77,8 +77,9 @@ async function assertPerl(): Promise<void> {
 }
 
 /**
- * Per-file limit on cloc's diffing. cloc's own default of 10s is far too low
- * for a committed bundle: its diff cost climbs roughly quadratically, measured
+ * Per-file limit on cloc's diffing.
+ *
+ * cloc's own default of 10s is far too low for a committed bundle: its diff cost climbs roughly quadratically, measured
  * here at 6s for 16k changed-heavy lines and 68s for 50k.
  *
  * Not unlimited, since cloc warns that a big file of repeated lines can take

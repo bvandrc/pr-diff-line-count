@@ -1,7 +1,7 @@
 /**
  * @fileoverview Action entrypoint: counts the resolved range with cloc, sorts
  * the changed files into categories, and reports the tally as outputs, a job
- * summary and a pull request comment.
+ * summary, and a pull request comment.
  */
 
 import { tmpdir } from 'node:os'

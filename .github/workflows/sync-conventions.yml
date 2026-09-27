@@ -15,6 +15,6 @@ jobs:
     uses: bvandrc/bvandrc-conventions/.github/workflows/sync.yml@main
     with:
       # No react.md or playwright.md: this repo has neither.
-      files: typescript.md ts-testing-all.md ts-unit-testing.md all.md biome.base.json
+      files: all.md typescript.md ts-testing-all.md ts-unit-testing.md biome.base.json
       apply-with-claude: true
     secrets: inherit

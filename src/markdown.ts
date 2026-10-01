@@ -81,21 +81,18 @@ const CHANGE_KIND_COLUMNS = {
 >
 
 /**
- * The count columns, grouped under the header each group spans.
+ * The counts the table reads, each heading a group of one column per kind.
  *
- * The order is the order a row's cells are built in. A group's label is the count it reads, since that is what the header says.
+ * The order is the order a row's cells are built in.
  */
 const COLUMN_GROUPS = [
-  { count: 'code', kinds: SHOWN_KINDS },
-  { count: 'comment', kinds: SHOWN_KINDS },
-] as const satisfies readonly {
-  count: keyof ClocCounts
-  kinds: readonly ShownKind[]
-}[]
+  'code',
+  'comment',
+] as const satisfies readonly (keyof ClocCounts)[]
 
 /** Every column a row has a cell for, flattened out of its group. */
-const COUNT_COLUMNS = COLUMN_GROUPS.flatMap(({ count, kinds }) =>
-  kinds.map((kind) => ({ kind, count }))
+const COUNT_COLUMNS = COLUMN_GROUPS.flatMap((count) =>
+  SHOWN_KINDS.map((kind) => ({ kind, count }))
 )
 
 /** Every column the table has: the label, plus one per sign. */
@@ -308,8 +305,8 @@ export function renderMarkdown(
       // group header row: what each span of sign columns counts
       tr(
         td('') +
-          COLUMN_GROUPS.map(({ count, kinds }) =>
-            th(count, { colspan: kinds.length, align: 'center' })
+          COLUMN_GROUPS.map((count) =>
+            th(count, { colspan: SHOWN_KINDS.length, align: 'center' })
           ).join('')
       ),
       // sign header row, one cell under each column of its group

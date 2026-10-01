@@ -50035,11 +50035,11 @@ var CHANGE_KIND_COLUMNS = {
   }
 };
 var COLUMN_GROUPS = [
-  { count: "code", kinds: SHOWN_KINDS },
-  { count: "comment", kinds: SHOWN_KINDS }
+  "code",
+  "comment"
 ];
 var COUNT_COLUMNS = COLUMN_GROUPS.flatMap(
-  ({ count, kinds }) => kinds.map((kind) => ({ kind, count }))
+  (count) => SHOWN_KINDS.map((kind) => ({ kind, count }))
 );
 var COLUMN_COUNT = 1 + COUNT_COLUMNS.length;
 var githubDiffTotalsSchema = external_exports.object({
@@ -50144,7 +50144,7 @@ function renderMarkdown(tally, {
       // group header row: what each span of sign columns counts
       tr(
         td("") + COLUMN_GROUPS.map(
-          ({ count, kinds }) => th(count, { colspan: kinds.length, align: "center" })
+          (count) => th(count, { colspan: SHOWN_KINDS.length, align: "center" })
         ).join("")
       ),
       // sign header row, one cell under each column of its group

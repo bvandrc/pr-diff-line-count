@@ -50000,6 +50000,9 @@ var betweenBlankLines = (content) => `
 ${content}
 
 `;
+var codeBlock = (language, content) => `\`\`\`${language}
+${content}
+\`\`\``;
 
 // src/markdown.ts
 var CATEGORY_LABELS = {
@@ -50018,22 +50021,9 @@ var foldModified = ({
   (counts) => mapValues(counts, (count, field) => count + modified[field])
 );
 var CHANGE_KIND_COLUMNS = {
-  added: {
-    sign: "+",
-    latex: "+",
-    color: "#2da44e"
-    // green
-  },
-  removed: {
-    sign: "\u2212",
-    latex: "-",
-    color: "#e5534b"
-    // red
-  },
-  net: {
-    sign: "\u0394",
-    latex: "\\Delta"
-  }
+  added: { sign: "+", marker: "+" },
+  removed: { sign: "\u2212", marker: "-" },
+  net: { sign: "\u0394" }
 };
 var COLUMN_GROUPS = [
   "code",
@@ -50048,60 +50038,37 @@ var githubDiffTotalsSchema = external_exports.object({
   deletions: external_exports.number()
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
-var ZERO_COLOR = "#848d97";
 var readsAs = (kind, count) => {
   if (kind === "net") return count > 0 ? "added" : "removed";
   return kind;
 };
-var countColor = (kind, count) => count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[readsAs(kind, count)].color;
 var columnCount = (folded, kind, count) => kind === "net" ? folded.added[count] - folded.removed[count] : folded[kind][count];
-var cellText = (kind, count, { latex }) => {
-  if (kind === "net" && count !== 0) {
-    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[readsAs(kind, count)];
-    return `${latex ? latexSign : sign}${Math.abs(count)}`;
-  }
-  return `${count}`;
+var cellText = (kind, count, { color }) => {
+  if (count === 0) return "0";
+  const { sign, marker } = CHANGE_KIND_COLUMNS[readsAs(kind, count)];
+  if (color) return `${marker}${Math.abs(count)}`;
+  return kind === "net" ? `${sign}${Math.abs(count)}` : `${count}`;
 };
-var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
-var boldLatex = (body) => `\\mathbf{${body}}`;
-var signedCount = (kind, count, { color }) => {
-  const { sign, latex } = CHANGE_KIND_COLUMNS[kind];
-  return color ? coloredLatex(countColor(kind, count), `${latex}${count}`) : `${sign}${count}`;
-};
+var diffCell = (line) => betweenBlankLines(codeBlock("diff", line));
 var linesChangedStr = ({
   label,
   added,
-  removed,
-  color = false
-}) => {
-  const counts = [
-    signedCount("added", added, { color }),
-    signedCount("removed", removed, { color })
-  ].join(" / ");
-  return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`);
-};
+  removed
+}) => unbreakable(
+  `${label} ${CHANGE_KIND_COLUMNS.added.sign}${added} / ${CHANGE_KIND_COLUMNS.removed.sign}${removed}`
+);
 var countCell = (kind, count, { emphasise = false, color }) => {
-  const text = cellText(kind, count, { latex: color });
-  return td(
-    color ? (
-      // A colored count is LaTeX, so it needs a blank line either side of it
-      // to be read as LaTeX at all -- see `betweenBlankLines`.
-      betweenBlankLines(
-        coloredLatex(
-          countColor(kind, count),
-          emphasise ? boldLatex(text) : text
-        )
-      )
-    ) : emphasise ? bold(text) : text,
-    { align: "right" }
-  );
+  const text = cellText(kind, count, { color });
+  return td(color ? diffCell(text) : emphasise ? bold(text) : text, {
+    align: "right"
+  });
 };
 var signCell = (kind, { color }) => {
   const column = CHANGE_KIND_COLUMNS[kind];
-  const heading = "color" in column ? coloredLatex(column.color, column.latex) : `$${column.latex}$`;
-  return td(color ? betweenBlankLines(heading) : column.sign, {
-    align: "center"
-  });
+  return td(
+    color ? diffCell("marker" in column ? column.marker : column.sign) : column.sign,
+    { align: "center" }
+  );
 };
 var row = (label, tally, { boldCode = false, color }) => {
   const folded = foldModified(tally);
@@ -50142,17 +50109,15 @@ function renderMarkdown(tally, {
   if (shown.length > 1)
     rows.push(row(bold("Total"), tally.total, { color: colorCounts }));
   if (ghTotals) {
-    const reported = linesChangedStr({
-      label: italic("GitHub reports"),
-      added: ghTotals.additions,
-      removed: ghTotals.deletions,
-      color: colorCounts
-    });
     rows.push(
-      td(colorCounts ? betweenBlankLines(reported) : reported, {
-        colspan: COLUMN_COUNT,
-        align: "center"
-      })
+      td(
+        linesChangedStr({
+          label: italic("GitHub reports"),
+          added: ghTotals.additions,
+          removed: ghTotals.deletions
+        }),
+        { colspan: COLUMN_COUNT, align: "center" }
+      )
     );
   }
   lines.push(
@@ -50178,7 +50143,7 @@ function renderMarkdown(tally, {
     ].join("\n")
   );
   lines.push(
-    `<sub>${linesChangedStr({ label: "Blank lines are excluded above:", color: colorCounts, ...mapValues(foldModified(tally.total), ({ blank }) => blank) })}.</sub>`
+    `<sub>${linesChangedStr({ label: "Blank lines are excluded above:", ...mapValues(foldModified(tally.total), ({ blank }) => blank) })}.</sub>`
   );
   return lines.join("\n\n");
 }

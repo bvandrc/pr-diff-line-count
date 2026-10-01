@@ -17,197 +17,265 @@ The comment, and the summary table with it:
 <tr><td></td>
 <td align="center">
 
-${\color{#2da44e}+}$
+```diff
++
+```
 
 </td>
 <td align="center">
 
-${\color{#e5534b}-}$
+```diff
+-
+```
 
 </td>
 <td align="center">
 
-$\Delta$
+```diff
+Δ
+```
 
 </td>
 <td align="center">
 
-${\color{#2da44e}+}$
+```diff
++
+```
 
 </td>
 <td align="center">
 
-${\color{#e5534b}-}$
+```diff
+-
+```
 
 </td>
 <td align="center">
 
-$\Delta$
+```diff
+Δ
+```
 
 </td></tr>
 <tr><td><strong>Source</strong></td>
 <td align="right">
 
-${\color{#2da44e}\mathbf{159}}$
+```diff
++159
+```
 
 </td>
 <td align="right">
 
-${\color{#e5534b}\mathbf{77}}$
+```diff
+-77
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}\mathbf{+82}}$
+```diff
++82
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}106}$
+```diff
++106
+```
 
 </td>
 <td align="right">
 
-${\color{#e5534b}42}$
+```diff
+-42
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}+64}$
+```diff
++64
+```
 
 </td></tr>
 <tr><td>Tests</td>
 <td align="right">
 
-${\color{#2da44e}12}$
+```diff
++12
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}+12}$
+```diff
++12
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}4}$
+```diff
++4
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}+4}$
+```diff
++4
+```
 
 </td></tr>
 <tr><td>Generated</td>
 <td align="right">
 
-${\color{#2da44e}6}$
+```diff
++6
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}+6}$
+```diff
++6
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td></tr>
 <tr><td>Config</td>
 <td align="right">
 
-${\color{#2da44e}8}$
+```diff
++8
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}+8}$
+```diff
++8
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
+```diff
+0
+```
 
 </td></tr>
 <tr><td><strong>Total</strong></td>
 <td align="right">
 
-${\color{#2da44e}185}$
+```diff
++185
+```
 
 </td>
 <td align="right">
 
-${\color{#e5534b}77}$
+```diff
+-77
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}+108}$
+```diff
++108
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}110}$
+```diff
++110
+```
 
 </td>
 <td align="right">
 
-${\color{#e5534b}42}$
+```diff
+-42
+```
 
 </td>
 <td align="right">
 
-${\color{#2da44e}+68}$
+```diff
++68
+```
 
 </td></tr>
-<tr><td colspan="7" align="center">
-
-<em>GitHub reports</em> ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$
-
-</td></tr>
+<tr><td colspan="7" align="center"><em>GitHub&nbsp;reports</em>&nbsp;+329&nbsp;/&nbsp;−144</td></tr>
 </table>
 
-<sub>Blank lines are excluded above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
+<sub>Blank&nbsp;lines&nbsp;are&nbsp;excluded&nbsp;above:&nbsp;+34&nbsp;/&nbsp;−25.</sub>
 
 ## Usage
 
@@ -289,10 +357,10 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
     - **green** — lines added
     - **red** — lines removed
     - a **`Δ`** count reads green when it grew and red when it shrank, and its heading is left uncolored
-    - **gray** — a zero, in whichever column it lands: nothing was added or removed, so it claims neither
-  - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. Keeping the spanning `code` / `comment` header needs an HTML table, since a markdown table has no `colspan`, and a colored cell there has to be opened out over its own lines for its LaTeX to be read as LaTeX rather than as its own source. That is why the rendered output is several times the size of the table it draws.
-  - LaTeX takes no theme, so a color cannot follow light and dark. All three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
-  - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
+    - a zero is left uncolored, in whichever column it lands: nothing was added or removed, so it claims neither
+  - GitHub strips `style` and `color` out of the HTML it renders, so each count is put in a `diff` code block of its own, which GitHub colors by the `+` or `-` a line opens with. That is why every count but a zero carries a sign, and why the colors are GitHub's own diff green and red, following light and dark. Keeping the spanning `code` / `comment` header needs an HTML table, since a markdown table has no `colspan`, and a code block there has to be opened out over its own lines to be read as one. That is why the rendered output is several times the size of the table it draws.
+  - A code block colors whole lines, so the `GitHub reports` row and the blank-line footnote, whose counts sit inside a phrase, stay uncolored.
+  - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that highlights no code.
 - **`+ comment` / `− comment` / `Δ comment`** — comment lines, parsed per language. The headline deliberately leaves them out.
 - Blank lines are counted but kept to a footnote.
 

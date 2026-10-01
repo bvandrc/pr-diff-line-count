@@ -16,6 +16,7 @@ import {
 import {
   betweenBlankLines,
   bold,
+  codeBlock,
   italic,
   td,
   th,
@@ -57,39 +58,25 @@ const foldModified = ({
   )
 
 /**
- * The sign each kind of change is headed with, and the color its counts read in.
+ * The sign each kind of change is headed with, and the diff marker that colors
+ * its counts.
  *
  * GitHub strips `style` and `color` out of the HTML it renders in a comment or
- * a job summary, so LaTeX is the only thing left that colors text. LaTeX takes
- * one color whatever the theme, hence mid tones rather than GitHub's own diff
- * green and red, each of which only works against one background.
+ * a job summary, so a `diff` code block, which colors a line by its first
+ * character, is what is left to color text with. It follows the theme, being
+ * GitHub's own diff green and red.
  *
- * Each sign is spelled twice because a header carries it into the LaTeX, and
- * `−` (U+2212) is not an operator KaTeX knows, so it cannot be dropped in as
- * written.
+ * Each sign is spelled twice because only an ASCII `-` marks a removed line,
+ * where `−` (U+2212) is what reads as a minus in plain text.
  *
- * The net column takes no color of its own, its counts reading in whichever of
- * the other two their sign matches.
+ * The net column has no marker of its own, its counts taking whichever of the
+ * other two their sign matches.
  */
 const CHANGE_KIND_COLUMNS = {
-  added: {
-    sign: '+',
-    latex: '+',
-    color: '#2da44e', // green
-  },
-  removed: {
-    sign: '−',
-    latex: '-',
-    color: '#e5534b', // red
-  },
-  net: {
-    sign: 'Δ',
-    latex: '\\Delta',
-  },
-} as const satisfies Record<
-  ColumnKind,
-  { sign: string; latex: string; color?: string }
->
+  added: { sign: '+', marker: '+' },
+  removed: { sign: '−', marker: '-' },
+  net: { sign: 'Δ' },
+} as const satisfies Record<ColumnKind, { sign: string; marker?: string }>
 
 /**
  * The counts the table reads, each heading a group of one column per kind.
@@ -126,15 +113,6 @@ const hasAnyLine = (tally: CategoryTally) =>
   sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0
 
 /**
- * What a zero reads in, whatever column it lands in.
- *
- * A zero is neither an addition nor a removal, so it takes a gray rather than
- * claiming either. Mid-toned for the same reason they are: LaTeX takes
- * no theme, so one value has to carry both backgrounds.
- */
-const ZERO_COLOR = '#848d97' // gray
-
-/**
  * The column a count reads as: its own, or for a net count, an addition when
  * the count grew and a removal when it shrank.
  */
@@ -142,10 +120,6 @@ const readsAs = (kind: ColumnKind, count: number): FoldedKind => {
   if (kind === 'net') return count > 0 ? 'added' : 'removed'
   return kind
 }
-
-/** The color a count reads in: the column it reads as, unless there is nothing to report. */
-const countColor = (kind: ColumnKind, count: number) =>
-  count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[readsAs(kind, count)].color
 
 /** One column's count out of a folded tally, the net one worked out from the other two. */
 const columnCount = (
@@ -158,109 +132,80 @@ const columnCount = (
     : folded[kind][count]
 
 /**
- * A count as its cell writes it: a net one behind its sign, so a shrink reads
- * as one, and any other bare.
+ * A count as its cell writes it.
+ *
+ * A net count goes behind its sign, so a shrink reads as one. A colored count
+ * of any column goes behind its marker, since that is what colors it. A zero
+ * goes bare in both cases, being neither an addition nor a removal.
  */
 const cellText = (
   kind: ColumnKind,
   count: number,
-  { latex }: { latex: boolean }
-) => {
-  if (kind === 'net' && count !== 0) {
-    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[readsAs(kind, count)]
-    return `${latex ? latexSign : sign}${Math.abs(count)}`
-  }
-  return `${count}`
-}
-
-/** One run of colored LaTeX, the braces scoping the color to what it holds. */
-const coloredLatex = (color: string, body: string | number) =>
-  `\${\\color{${color}}${body}}$`
-
-/**
- * Emphasis inside LaTeX, which is where it has to go: `<strong>` around a run of
- * LaTeX leaves what the LaTeX sets unbolded.
- */
-const boldLatex = (body: string | number) => `\\mathbf{${body}}`
-
-/** One count behind the sign its kind is written with, colored where asked. */
-const signedCount = (
-  kind: FoldedKind,
-  count: number,
   { color }: { color: boolean }
 ) => {
-  const { sign, latex } = CHANGE_KIND_COLUMNS[kind]
-  return color
-    ? coloredLatex(countColor(kind, count), `${latex}${count}`)
-    : `${sign}${count}`
+  if (count === 0) return '0'
+  const { sign, marker } = CHANGE_KIND_COLUMNS[readsAs(kind, count)]
+  if (color) return `${marker}${Math.abs(count)}`
+  return kind === 'net' ? `${sign}${Math.abs(count)}` : `${count}`
 }
+
+/**
+ * One line of a `diff` code block, colored by the marker it opens with.
+ *
+ * Needs a blank line either side to be read as a code block inside the table at
+ * all -- see `betweenBlankLines`.
+ */
+const diffCell = (line: string) => betweenBlankLines(codeBlock('diff', line))
 
 /** One labelled phrase of counts — `Source code: +1 / −0`. */
 const linesChangedStr = ({
   label,
   added,
   removed,
-  color = false,
 }: {
   label: string
   added: number
   removed: number
-  color?: boolean
-}) => {
-  const counts = [
-    signedCount('added', added, { color }),
-    signedCount('removed', removed, { color }),
-  ].join(' / ')
-  // A phrase carrying LaTeX keeps out of `unbreakable`'s way: an `&nbsp;` beside
-  // a `$` leaves the delimiter an entity where it wants a space. The cost is
-  // that such a phrase can wrap where a plain one could not.
-  return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`)
-}
+}) =>
+  unbreakable(
+    `${label} ${CHANGE_KIND_COLUMNS.added.sign}${added} / ${CHANGE_KIND_COLUMNS.removed.sign}${removed}`
+  )
 
-/** One count's cell, in the color its kind reads in unless color is off. */
+/**
+ * One count's cell, in its own diff block unless color is off.
+ *
+ * Emphasis only reaches a plain count: a code block renders no markup inside it.
+ */
 const countCell = (
   kind: ColumnKind,
   count: number,
   { emphasise = false, color }: { emphasise?: boolean; color: boolean }
 ) => {
-  const text = cellText(kind, count, { latex: color })
-  return td(
-    color
-      ? // A colored count is LaTeX, so it needs a blank line either side of it
-        // to be read as LaTeX at all -- see `betweenBlankLines`.
-        betweenBlankLines(
-          coloredLatex(
-            countColor(kind, count),
-            emphasise ? boldLatex(text) : text
-          )
-        )
-      : emphasise
-        ? bold(text)
-        : text,
-    { align: 'right' }
-  )
+  const text = cellText(kind, count, { color })
+  return td(color ? diffCell(text) : emphasise ? bold(text) : text, {
+    align: 'right',
+  })
 }
 
 /**
- * The cell heading one column: its sign, in the color that column's counts read
- * in, or the net column's uncolored `Δ`.
+ * The cell heading one column: its sign, colored as that column's counts are,
+ * or the net column's uncolored `Δ`.
  *
  * Only the sign, since the count it reports is named by the group header
  * spanning it.
  */
 const signCell = (kind: ColumnKind, { color }: { color: boolean }) => {
   const column = CHANGE_KIND_COLUMNS[kind]
-  const heading =
-    'color' in column
-      ? coloredLatex(column.color, column.latex)
-      : `$${column.latex}$`
-  // A `<td>` rather than the `<th>` the row deserves: a colored sign is written
-  // between blank lines, which leaves its content a paragraph, and the margin a
-  // paragraph carries is reset inside a `<td>` but not inside a `<th>` -- so a
-  // `<th>` row of them stands taller than the rows of counts below it.
-  return td(color ? betweenBlankLines(heading) : column.sign, {
-    align: 'center',
-  })
+  // A `<td>` rather than the `<th>` the row deserves: a colored sign is a code
+  // block, and the margin a block carries is reset inside a `<td>` but not
+  // inside a `<th>` -- so a `<th>` row of them stands taller than the rows of
+  // counts below it.
+  return td(
+    color
+      ? diffCell('marker' in column ? column.marker : column.sign)
+      : column.sign,
+    { align: 'center' }
+  )
 }
 
 /** The source row carries the headline counts, so its code cells are bold. */
@@ -289,15 +234,15 @@ const row = (
  * Returns markdown ready to post or display, with untouched categories left out
  * of the table entirely.
  *
- * `colorCounts` sets the counts as LaTeX, which is what lets them carry a color
- * -- see `CHANGE_KIND_COLUMNS` for why nothing cheaper colors text on GitHub.
- * Turning it off leaves them plain, for where the `markdown` output is rendered
- * by something that does no LaTeX.
+ * `colorCounts` puts each count in a `diff` code block of its own, which is
+ * what lets it carry a color -- see `CHANGE_KIND_COLUMNS` for why nothing
+ * cheaper colors text on GitHub. Turning it off leaves them plain, for where
+ * the `markdown` output is rendered by something that highlights no code.
  *
  * The table is HTML rather than markdown: the sign columns are grouped under a
  * spanning `code` / `comment` header, and a markdown table has no colspan. The
  * cost is the size of the output, a colored cell having to be opened out over
- * its own lines for its LaTeX to be read as LaTeX.
+ * its own lines for its code block to be read as one.
  */
 export function renderMarkdown(
   tally: DiffTally,
@@ -334,20 +279,18 @@ export function renderMarkdown(
     rows.push(row(bold('Total'), tally.total, { color: colorCounts }))
 
   // GitHub's own count of the same diff, spanning the table under our rows.
-  // Only the label is emphasised: GitHub renders no LaTeX inside emphasis, so
-  // counts wrapped in it come out reading as their own source.
+  // Left uncolored: a diff block colors whole lines, so it has no way to color
+  // a count inside a phrase.
   if (ghTotals) {
-    const reported = linesChangedStr({
-      label: italic('GitHub reports'),
-      added: ghTotals.additions,
-      removed: ghTotals.deletions,
-      color: colorCounts,
-    })
     rows.push(
-      td(colorCounts ? betweenBlankLines(reported) : reported, {
-        colspan: COLUMN_COUNT,
-        align: 'center',
-      })
+      td(
+        linesChangedStr({
+          label: italic('GitHub reports'),
+          added: ghTotals.additions,
+          removed: ghTotals.deletions,
+        }),
+        { colspan: COLUMN_COUNT, align: 'center' }
+      )
     )
   }
 
@@ -376,7 +319,7 @@ export function renderMarkdown(
   )
 
   lines.push(
-    `<sub>${linesChangedStr({ label: 'Blank lines are excluded above:', color: colorCounts, ...mapValues(foldModified(tally.total), ({ blank }) => blank) })}.</sub>`
+    `<sub>${linesChangedStr({ label: 'Blank lines are excluded above:', ...mapValues(foldModified(tally.total), ({ blank }) => blank) })}.</sub>`
   )
 
   return lines.join('\n\n')

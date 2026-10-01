@@ -70,31 +70,21 @@ describe('renderMarkdown', () => {
           'src/a.ts': { code: 91, comment: 106, blank: 12 },
           'src/a.test.ts': { code: 7, comment: 2, blank: 1 },
         },
+        // A line changed in place counts once as added and once as removed.
+        modified: { 'src/a.ts': { code: 5, comment: 3, blank: 2 } },
         removed: { 'src/a.ts': { code: 9, comment: 42, blank: 3 } },
       })
     )
 
     // Distinct values in every column: the order is what this pins.
-    expect(getRowCells(markdown, 'Source')).toEqual([
-      '91',
-      '0',
-      '9',
-      '106',
-      '42',
-    ])
-    expect(getRowCells(markdown, 'Tests')).toEqual(['7', '0', '0', '2', '0'])
-    expect(getRowCells(markdown, 'Total')).toEqual([
-      '98',
-      '0',
-      '9',
-      '108',
-      '42',
-    ])
+    expect(getRowCells(markdown, 'Source')).toEqual(['96', '14', '109', '45'])
+    expect(getRowCells(markdown, 'Tests')).toEqual(['7', '0', '2', '0'])
+    expect(getRowCells(markdown, 'Total')).toEqual(['103', '14', '111', '45'])
     // The footnote's counts are LaTeX by default, so the color comes off first.
     // Its minus is the one LaTeX sets rather than U+2212, and it keeps real
     // spaces rather than the `&nbsp;` a plain phrase is held together with.
     expect(stripMarkup(markdown)).toContain(
-      'Blank lines are excluded above: +13 / -3.'
+      'Blank lines are excluded above: +15 / -5.'
     )
     expect(markdown).not.toContain('Generated')
   })

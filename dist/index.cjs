@@ -49686,7 +49686,8 @@ async function runClocDiff({
   baseSha,
   headSha,
   reportPath,
-  cwd
+  cwd,
+  ignoreWhitespace = false
 }) {
   await assertPerl();
   const clocPath = await downloadCloc();
@@ -49702,6 +49703,9 @@ async function runClocDiff({
       "--by-file",
       "--json",
       `--diff-timeout=${DIFF_TIMEOUT_SECONDS}`,
+      // cloc strips every whitespace character before comparing, not just the
+      // leading run -- the same as `git diff -w`.
+      ...ignoreWhitespace ? ["--ignore-whitespace"] : [],
       `--report-file=${reportPath}`
     ],
     {
@@ -50261,7 +50265,8 @@ async function run() {
   const report = await runClocDiff({
     baseSha,
     headSha,
-    reportPath: (0, import_node_path2.join)((0, import_node_os.tmpdir)(), "pr-diff-line-count.json")
+    reportPath: (0, import_node_path2.join)((0, import_node_os.tmpdir)(), "pr-diff-line-count.json"),
+    ignoreWhitespace: getBooleanInput("ignore-whitespace")
   });
   const tally = tallyDiff(report, DEFAULT_CATEGORY_GLOBS);
   const markdown = renderMarkdown(tally, {

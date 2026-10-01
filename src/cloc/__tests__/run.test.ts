@@ -100,6 +100,46 @@ const c = 3
     expect(report.added?.[FILE]).toMatchObject({ code: 1, comment: 0 })
   }, 60_000)
 
+  describe('a re-indent', () => {
+    const FILE = 'indent.ts'
+    const BODY = ['const a = 1', 'const b = 2', 'const c = 3']
+
+    const commitReindent = () => {
+      write(FILE, `${BODY.join('\n')}\n`)
+      const base = commit('flat')
+      write(
+        FILE,
+        ['if (x) {', ...BODY.map((l) => `  ${l}`), '}', ''].join('\n')
+      )
+      return { base, head: commit('wrap in a block') }
+    }
+
+    it('counts re-indented lines as modified by default', async () => {
+      const { base, head } = commitReindent()
+
+      const report = await countBetween(base, head)
+
+      expect(report.modified?.[FILE]).toMatchObject({ code: BODY.length })
+    }, 60_000)
+
+    it('counts only the new lines under ignoreWhitespace', async () => {
+      const { base, head } = commitReindent()
+
+      const report = await runClocDiff({
+        baseSha: base,
+        headSha: head,
+        cwd: repo,
+        reportPath: join(cache, 'report.json'),
+        ignoreWhitespace: true,
+      })
+
+      expect({
+        added: report.added?.[FILE]?.code,
+        modified: report.modified?.[FILE]?.code,
+      }).toEqual({ added: 2, modified: 0 }) // `if (x) {` and `}`
+    }, 60_000)
+  })
+
   /**
    * The regression the pinned release exists for: cloc 1.86 — which the npm `cloc@2.06`
    * package installs — reads a rename as the whole file added plus the whole

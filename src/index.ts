@@ -34,6 +34,7 @@ async function run(): Promise<void> {
     baseSha,
     headSha,
     reportPath: join(tmpdir(), 'pr-diff-line-count.json'),
+    ignoreWhitespace: getBooleanInput('ignore-whitespace'),
   })
 
   const tally = tallyDiff(report, DEFAULT_CATEGORY_GLOBS)

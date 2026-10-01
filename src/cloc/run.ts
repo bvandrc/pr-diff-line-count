@@ -100,12 +100,15 @@ export async function runClocDiff({
   headSha,
   reportPath,
   cwd,
+  ignoreWhitespace = false,
 }: {
   baseSha: string
   headSha: string
   reportPath: string
   /** Where to run git from. Defaults to the process's own directory. */
   cwd?: string
+  /** Count a line whose only change is whitespace, such as a re-indent, as unchanged. */
+  ignoreWhitespace?: boolean
 }): Promise<ClocDiffReport> {
   await assertPerl()
   const clocPath = await downloadCloc()
@@ -122,6 +125,9 @@ export async function runClocDiff({
       '--by-file',
       '--json',
       `--diff-timeout=${DIFF_TIMEOUT_SECONDS}`,
+      // cloc strips every whitespace character before comparing, not just the
+      // leading run -- the same as `git diff -w`.
+      ...(ignoreWhitespace ? ['--ignore-whitespace'] : []),
       `--report-file=${reportPath}`,
     ],
     {

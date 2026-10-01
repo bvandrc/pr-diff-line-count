@@ -13,16 +13,11 @@ The result comes back three ways:
 The comment, and the summary table with it:
 
 <table>
-<tr><td></td><th colspan="3" align="center">code</th><th colspan="2" align="center">comment</th></tr>
+<tr><td></td><th colspan="2" align="center">code</th><th colspan="2" align="center">comment</th></tr>
 <tr><td></td>
 <td align="center">
 
 ${\color{#2da44e}+}$
-
-</td>
-<td align="center">
-
-${\color{#bf8700}\sim}$
 
 </td>
 <td align="center">
@@ -43,17 +38,12 @@ ${\color{#e5534b}-}$
 <tr><td><strong>Source</strong></td>
 <td align="right">
 
-${\color{#2da44e}\mathbf{91}}$
+${\color{#2da44e}\mathbf{159}}$
 
 </td>
 <td align="right">
 
-${\color{#bf8700}\mathbf{68}}$
-
-</td>
-<td align="right">
-
-${\color{#e5534b}\mathbf{9}}$
+${\color{#e5534b}\mathbf{77}}$
 
 </td>
 <td align="right">
@@ -79,11 +69,6 @@ ${\color{#848d97}0}$
 </td>
 <td align="right">
 
-${\color{#848d97}0}$
-
-</td>
-<td align="right">
-
 ${\color{#2da44e}4}$
 
 </td>
@@ -92,15 +77,10 @@ ${\color{#2da44e}4}$
 ${\color{#848d97}0}$
 
 </td></tr>
-<tr><td>Docs</td>
+<tr><td>Generated</td>
 <td align="right">
 
 ${\color{#2da44e}6}$
-
-</td>
-<td align="right">
-
-${\color{#848d97}0}$
 
 </td>
 <td align="right">
@@ -138,26 +118,16 @@ ${\color{#848d97}0}$
 
 ${\color{#848d97}0}$
 
-</td>
-<td align="right">
-
-${\color{#848d97}0}$
-
 </td></tr>
 <tr><td><strong>Total</strong></td>
 <td align="right">
 
-${\color{#2da44e}117}$
+${\color{#2da44e}185}$
 
 </td>
 <td align="right">
 
-${\color{#bf8700}68}$
-
-</td>
-<td align="right">
-
-${\color{#e5534b}9}$
+${\color{#e5534b}77}$
 
 </td>
 <td align="right">
@@ -170,14 +140,14 @@ ${\color{#2da44e}110}$
 ${\color{#e5534b}42}$
 
 </td></tr>
-<tr><td colspan="6" align="center">
+<tr><td colspan="5" align="center">
 
 <em>GitHub reports</em> ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$
 
 </td></tr>
 </table>
 
-<sub>`~` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's. Blank lines are excluded above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
+<sub>Blank lines are excluded above: ${\color{#2da44e}+34}$ / ${\color{#e5534b}-25}$.</sub>
 
 ## Usage
 
@@ -252,17 +222,15 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
 
 ## Reading the table
 
-- **`+ code` / `− code`** — lines added and removed, excluding comments and blank lines.
+- **`+ code` / `− code`** — lines added and removed, excluding comments and blank lines. A line changed in place counts once in each, the way GitHub counts it.
 - **Colors**
   - Each count, and the sign heading its column, reads in the color of its kind of change:
     - **green** — lines added
-    - **amber** — lines changed in place
     - **red** — lines removed
-    - **gray** — a zero, in whichever column it lands: nothing was added, changed, or removed, so it claims none of the three
+    - **gray** — a zero, in whichever column it lands: nothing was added or removed, so it claims neither
   - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. Keeping the spanning `code` / `comment` header needs an HTML table, since a markdown table has no `colspan`, and a colored cell there has to be opened out over its own lines for its LaTeX to be read as LaTeX rather than as its own source. That is why the rendered output is several times the size of the table it draws.
-  - LaTeX takes no theme, so a color cannot follow light and dark. All four are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
+  - LaTeX takes no theme, so a color cannot follow light and dark. All three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
   - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
-- **`~ code`** — lines changed in place. cloc counts a changed line once, rather than as an add plus a delete, which is why these columns don't sum to GitHub's own `+/−`.
 - **`+ comment` / `− comment`** — comment lines, parsed per language. The headline deliberately leaves them out.
 - Blank lines are counted but kept to a footnote.
 
@@ -312,7 +280,7 @@ steps:
     run: echo "::warning::Large PR — consider splitting it."
 ```
 
-`modified` counts a line changed in place **once**, rather than as an add plus a delete, so these numbers deliberately don't sum to GitHub's own `+/−`.
+`modified` counts a line changed in place **once**, where the table shows it as both an add and a remove. To match the table, add `modified` to both `added` and `removed`.
 
 ## Limitations
 

@@ -3,7 +3,7 @@
  * summary and the `markdown` output.
  */
 
-import { mapValues, pick, sum, without } from 'es-toolkit'
+import { mapValues, sum } from 'es-toolkit'
 import { z } from 'zod'
 
 import { CHANGE_KINDS, type ChangeKind, type ClocCounts } from './cloc/run.ts'
@@ -32,6 +32,27 @@ const CATEGORY_LABELS = {
 } as const satisfies Record<FileCategory, string>
 
 /**
+ * The kinds the table has columns for: cloc's own, less `modified`.
+ *
+ * A line changed in place is shown as an add plus a remove, the way GitHub and
+ * `git diff` count it, so the table reads without knowing cloc's third kind.
+ */
+const SHOWN_KINDS = [
+  'added',
+  'removed',
+] as const satisfies readonly ChangeKind[]
+type ShownKind = (typeof SHOWN_KINDS)[number]
+
+/** A tally with each in-place change counted once as added and once as removed. */
+const foldModified = ({
+  modified,
+  ...tally
+}: CategoryTally): Record<ShownKind, ClocCounts> =>
+  mapValues(tally, (counts) =>
+    mapValues(counts, (count, field) => count + modified[field])
+  )
+
+/**
  * The sign each kind of change is headed with, and the color its counts read in.
  *
  * GitHub strips `style` and `color` out of the HTML it renders in a comment or
@@ -39,9 +60,9 @@ const CATEGORY_LABELS = {
  * one color whatever the theme, hence mid tones rather than GitHub's own diff
  * green and red, each of which only works against one background.
  *
- * Each sign is spelled twice because a header carries it into the LaTeX: a
- * literal `~` there is a non-breaking space, and `−` (U+2212) is not an
- * operator KaTeX knows, so neither survives being dropped in as written.
+ * Each sign is spelled twice because a header carries it into the LaTeX, and
+ * `−` (U+2212) is not an operator KaTeX knows, so it cannot be dropped in as
+ * written.
  */
 const CHANGE_KIND_COLUMNS = {
   added: {
@@ -49,18 +70,13 @@ const CHANGE_KIND_COLUMNS = {
     latex: '+',
     color: '#2da44e', // green
   },
-  modified: {
-    sign: '~',
-    latex: '\\sim',
-    color: '#bf8700', // amber
-  },
   removed: {
     sign: '−',
     latex: '-',
     color: '#e5534b', // red
   },
 } as const satisfies Record<
-  ChangeKind,
+  ShownKind,
   { sign: string; latex: string; color: string }
 >
 
@@ -68,14 +84,13 @@ const CHANGE_KIND_COLUMNS = {
  * The count columns, grouped under the header each group spans.
  *
  * The order is the order a row's cells are built in. A group's label is the count it reads, since that is what the header says.
- * `comment` leaves `modified` out, cloc's in-place count being a code one.
  */
 const COLUMN_GROUPS = [
-  { count: 'code', kinds: CHANGE_KINDS },
-  { count: 'comment', kinds: without(CHANGE_KINDS, 'modified') },
+  { count: 'code', kinds: SHOWN_KINDS },
+  { count: 'comment', kinds: SHOWN_KINDS },
 ] as const satisfies readonly {
   count: keyof ClocCounts
-  kinds: readonly ChangeKind[]
+  kinds: readonly ShownKind[]
 }[]
 
 /** Every column a row has a cell for, flattened out of its group. */
@@ -106,13 +121,13 @@ const hasAnyLine = (tally: CategoryTally) =>
  * What a zero reads in, whatever column it lands in.
  *
  * A zero is neither an addition nor a removal, so it takes a gray rather than
- * claiming one of the three. Mid-toned for the same reason they are: LaTeX takes
+ * claiming either. Mid-toned for the same reason they are: LaTeX takes
  * no theme, so one value has to carry both backgrounds.
  */
 const ZERO_COLOR = '#848d97' // gray
 
 /** The color a count reads in: its kind's, unless there is nothing to report. */
-const countColor = (kind: ChangeKind, count: number) =>
+const countColor = (kind: ShownKind, count: number) =>
   count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[kind].color
 
 /** One run of colored LaTeX, the braces scoping the color to what it holds. */
@@ -127,7 +142,7 @@ const boldLatex = (body: string | number) => `\\mathbf{${body}}`
 
 /** One count behind the sign its kind is written with, colored where asked. */
 const signedCount = (
-  kind: ChangeKind,
+  kind: ShownKind,
   count: number,
   { color }: { color: boolean }
 ) => {
@@ -137,32 +152,22 @@ const signedCount = (
     : `${sign}${count}`
 }
 
-/**
- * One labelled phrase of counts — `Source code: +1 / ~3 / −0`.
- *
- * `modified` is left out for the sources that have no such count, like GitHub's
- * own totals.
- */
+/** One labelled phrase of counts — `Source code: +1 / −0`. */
 const linesChangedStr = ({
   label,
   added,
-  modified,
   removed,
   color = false,
 }: {
   label: string
   added: number
-  modified?: number
   removed: number
   color?: boolean
 }) => {
   const counts = [
     signedCount('added', added, { color }),
-    modified === undefined ? '' : signedCount('modified', modified, { color }),
     signedCount('removed', removed, { color }),
-  ]
-    .filter(Boolean)
-    .join(' / ')
+  ].join(' / ')
   // A phrase carrying LaTeX keeps out of `unbreakable`'s way: an `&nbsp;` beside
   // a `$` leaves the delimiter an entity where it wants a space. The cost is
   // that such a phrase can wrap where a plain one could not.
@@ -171,7 +176,7 @@ const linesChangedStr = ({
 
 /** One count's cell, in the color its kind reads in unless color is off. */
 const countCell = (
-  kind: ChangeKind,
+  kind: ShownKind,
   count: number,
   { emphasise = false, color }: { emphasise?: boolean; color: boolean }
 ) =>
@@ -198,7 +203,7 @@ const countCell = (
  * Only the sign, since the count it reports is named by the group header
  * spanning it.
  */
-const signCell = (kind: ChangeKind, { color }: { color: boolean }) => {
+const signCell = (kind: ShownKind, { color }: { color: boolean }) => {
   const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
   // A `<td>` rather than the `<th>` the row deserves: a colored sign is written
   // between blank lines, which leaves its content a paragraph, and the margin a
@@ -214,11 +219,12 @@ const row = (
   label: string,
   tally: CategoryTally,
   { boldCode = false, color }: { boldCode?: boolean; color: boolean }
-) =>
-  [
+) => {
+  const folded = foldModified(tally)
+  return [
     td(label),
     ...COUNT_COLUMNS.map(({ kind, count }) =>
-      countCell(kind, tally[kind][count], {
+      countCell(kind, folded[kind][count], {
         emphasise: boldCode && count === 'code',
         color,
       })
@@ -226,6 +232,7 @@ const row = (
     // A cell opened out over its own lines has to close before the next one
     // starts, so the cells of a row go one per line rather than end to end.
   ].join('\n')
+}
 
 /**
  * Renders one diff as a table.
@@ -320,7 +327,7 @@ export function renderMarkdown(
   )
 
   lines.push(
-    `<sub>\`~\` is a line changed in place — cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.\n${linesChangedStr({ label: 'Blank lines are excluded above:', color: colorCounts, ...mapValues(pick(tally.total, ['added', 'removed']), ({ blank }) => blank) })}.</sub>`
+    `<sub>${linesChangedStr({ label: 'Blank lines are excluded above:', color: colorCounts, ...mapValues(foldModified(tally.total), ({ blank }) => blank) })}.</sub>`
   )
 
   return lines.join('\n\n')

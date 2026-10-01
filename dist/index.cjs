@@ -49733,12 +49733,6 @@ ${errors.join("\n")}`
   return clocDiffReportSchema.parse(JSON.parse(raw));
 }
 
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/difference.mjs
-function difference(firstArr, secondArr) {
-  const secondSet = new Set(secondArr);
-  return firstArr.filter((item) => !secondSet.has(item));
-}
-
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/partition.mjs
 function partition(arr, isInTruthy) {
   const truthy = [];
@@ -49749,11 +49743,6 @@ function partition(arr, isInTruthy) {
     else falsy.push(item);
   }
   return [truthy, falsy];
-}
-
-// node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/without.mjs
-function without(array2, ...values) {
-  return difference(array2, values);
 }
 
 // node_modules/.pnpm/es-toolkit@1.52.0/node_modules/es-toolkit/dist/array/zipObject.mjs
@@ -50020,18 +50009,23 @@ var CATEGORY_LABELS = {
   docs: "Docs",
   config: "Config"
 };
+var SHOWN_KINDS = [
+  "added",
+  "removed"
+];
+var foldModified = ({
+  modified,
+  ...tally
+}) => mapValues(
+  tally,
+  (counts) => mapValues(counts, (count, field) => count + modified[field])
+);
 var CHANGE_KIND_COLUMNS = {
   added: {
     sign: "+",
     latex: "+",
     color: "#2da44e"
     // green
-  },
-  modified: {
-    sign: "~",
-    latex: "\\sim",
-    color: "#bf8700"
-    // amber
   },
   removed: {
     sign: "\u2212",
@@ -50041,8 +50035,8 @@ var CHANGE_KIND_COLUMNS = {
   }
 };
 var COLUMN_GROUPS = [
-  { count: "code", kinds: CHANGE_KINDS },
-  { count: "comment", kinds: without(CHANGE_KINDS, "modified") }
+  { count: "code", kinds: SHOWN_KINDS },
+  { count: "comment", kinds: SHOWN_KINDS }
 ];
 var COUNT_COLUMNS = COLUMN_GROUPS.flatMap(
   ({ count, kinds }) => kinds.map((kind) => ({ kind, count }))
@@ -50064,15 +50058,13 @@ var signedCount = (kind, count, { color }) => {
 var linesChangedStr = ({
   label,
   added,
-  modified,
   removed,
   color = false
 }) => {
   const counts = [
     signedCount("added", added, { color }),
-    modified === void 0 ? "" : signedCount("modified", modified, { color }),
     signedCount("removed", removed, { color })
-  ].filter(Boolean).join(" / ");
+  ].join(" / ");
   return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`);
 };
 var countCell = (kind, count, { emphasise = false, color }) => td(
@@ -50094,17 +50086,20 @@ var signCell = (kind, { color }) => {
     align: "center"
   });
 };
-var row = (label, tally, { boldCode = false, color }) => [
-  td(label),
-  ...COUNT_COLUMNS.map(
-    ({ kind, count }) => countCell(kind, tally[kind][count], {
-      emphasise: boldCode && count === "code",
-      color
-    })
-  )
-  // A cell opened out over its own lines has to close before the next one
-  // starts, so the cells of a row go one per line rather than end to end.
-].join("\n");
+var row = (label, tally, { boldCode = false, color }) => {
+  const folded = foldModified(tally);
+  return [
+    td(label),
+    ...COUNT_COLUMNS.map(
+      ({ kind, count }) => countCell(kind, folded[kind][count], {
+        emphasise: boldCode && count === "code",
+        color
+      })
+    )
+    // A cell opened out over its own lines has to close before the next one
+    // starts, so the cells of a row go one per line rather than end to end.
+  ].join("\n");
+};
 function renderMarkdown(tally, {
   githubTotals: ghTotals,
   colorCounts = true
@@ -50166,8 +50161,7 @@ function renderMarkdown(tally, {
     ].join("\n")
   );
   lines.push(
-    `<sub>\`~\` is a line changed in place \u2014 cloc counts it once rather than as an add plus a delete, so these columns do not sum to GitHub's.
-${linesChangedStr({ label: "Blank lines are excluded above:", color: colorCounts, ...mapValues(pick2(tally.total, ["added", "removed"]), ({ blank }) => blank) })}.</sub>`
+    `<sub>${linesChangedStr({ label: "Blank lines are excluded above:", color: colorCounts, ...mapValues(foldModified(tally.total), ({ blank }) => blank) })}.</sub>`
   );
   return lines.join("\n\n");
 }

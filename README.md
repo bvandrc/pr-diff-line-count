@@ -275,7 +275,7 @@ CI here runs that path on every pull request, under `contents: read` alone, so i
 | `github-token` | `${{ github.token }}` | Token used to post the comment. Needs `pull-requests: write`. |
 | `comment` | `true` | Post the table as a sticky comment. Set `false` to use only the outputs and job summary. |
 | `color-counts` | `true` | Color the counts by the kind of change. Set `false` to keep them as plain text. |
-| `ignore-whitespace` | `false` | Count a line whose only change is whitespace as unchanged, so re-indenting code (wrapping it in a block, say) adds nothing to the counts. Whitespace inside a line is ignored too, as `git diff -w` does. The `GitHub reports` row still counts those lines. |
+| `ignore-whitespace` | `true` | Count a line whose only change is whitespace as unchanged, so re-indenting code (wrapping it in a block, say) adds nothing to the counts. Whitespace inside a line is ignored too, as `git diff -w` does. The `GitHub reports` row still counts those lines. Set `false` to count them here too. |
 | `base-sha` | the PR's base | Revision to count from. The merge base of the two is what gets counted. |
 | `head-sha` | the PR's head | Revision to count to. |
 

@@ -50029,9 +50029,12 @@ var CHANGE_KIND_COLUMNS = {
     latex: "-",
     color: "#e5534b"
     // red
+  },
+  net: {
+    sign: "\u0394",
+    latex: "\\Delta"
   }
 };
-var NET_HEADING = { sign: "\u0394", latex: "\\Delta" };
 var COLUMN_GROUPS = [
   "code",
   "comment"
@@ -50092,9 +50095,11 @@ var countCell = (kind, count, { emphasise = false, color }) => {
   );
 };
 var signCell = (kind, { color }) => {
-  const { sign, latex } = kind === "net" ? NET_HEADING : CHANGE_KIND_COLUMNS[kind];
-  const heading = kind === "net" ? `$${latex}$` : coloredLatex(CHANGE_KIND_COLUMNS[kind].color, latex);
-  return td(color ? betweenBlankLines(heading) : sign, { align: "center" });
+  const column = CHANGE_KIND_COLUMNS[kind];
+  const heading = "color" in column ? coloredLatex(column.color, column.latex) : `$${column.latex}$`;
+  return td(color ? betweenBlankLines(heading) : column.sign, {
+    align: "center"
+  });
 };
 var row = (label, tally, { boldCode = false, color }) => {
   const folded = foldModified(tally);

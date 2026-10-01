@@ -67,6 +67,9 @@ const foldModified = ({
  * Each sign is spelled twice because a header carries it into the LaTeX, and
  * `−` (U+2212) is not an operator KaTeX knows, so it cannot be dropped in as
  * written.
+ *
+ * The net column takes no color of its own, its counts reading in whichever of
+ * the other two their sign matches.
  */
 const CHANGE_KIND_COLUMNS = {
   added: {
@@ -79,18 +82,14 @@ const CHANGE_KIND_COLUMNS = {
     latex: '-',
     color: '#e5534b', // red
   },
+  net: {
+    sign: 'Δ',
+    latex: '\\Delta',
+  },
 } as const satisfies Record<
-  FoldedKind,
-  { sign: string; latex: string; color: string }
+  ColumnKind,
+  { sign: string; latex: string; color?: string }
 >
-
-/**
- * The net column's heading, spelled twice for the same reason a sign is.
- *
- * It takes no color of its own, its counts reading in whichever of the other
- * two their sign matches.
- */
-const NET_HEADING = { sign: 'Δ', latex: '\\Delta' } as const
 
 /**
  * The counts the table reads, each heading a group of one column per kind.
@@ -248,17 +247,18 @@ const countCell = (
  * spanning it.
  */
 const signCell = (kind: ColumnKind, { color }: { color: boolean }) => {
-  const { sign, latex } =
-    kind === 'net' ? NET_HEADING : CHANGE_KIND_COLUMNS[kind]
+  const column = CHANGE_KIND_COLUMNS[kind]
   const heading =
-    kind === 'net'
-      ? `$${latex}$`
-      : coloredLatex(CHANGE_KIND_COLUMNS[kind].color, latex)
+    'color' in column
+      ? coloredLatex(column.color, column.latex)
+      : `$${column.latex}$`
   // A `<td>` rather than the `<th>` the row deserves: a colored sign is written
   // between blank lines, which leaves its content a paragraph, and the margin a
   // paragraph carries is reset inside a `<td>` but not inside a `<th>` -- so a
   // `<th>` row of them stands taller than the rows of counts below it.
-  return td(color ? betweenBlankLines(heading) : sign, { align: 'center' })
+  return td(color ? betweenBlankLines(heading) : column.sign, {
+    align: 'center',
+  })
 }
 
 /** The source row carries the headline counts, so its code cells are bold. */

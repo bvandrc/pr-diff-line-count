@@ -32,22 +32,26 @@ const CATEGORY_LABELS = {
 } as const satisfies Record<FileCategory, string>
 
 /**
- * The kinds the table has columns for: cloc's own, less `modified`.
+ * cloc's kinds as the table counts them: its own, less `modified`.
  *
  * A line changed in place is shown as an add plus a remove, the way GitHub and
  * `git diff` count it, so the table reads without knowing cloc's third kind.
  */
-const SHOWN_KINDS = [
-  'added',
-  'removed',
-] as const satisfies readonly ChangeKind[]
-type ShownKind = (typeof SHOWN_KINDS)[number]
+type FoldedKind = Exclude<ChangeKind, 'modified'>
+
+/**
+ * The columns under each count: lines added, lines removed, and the difference.
+ *
+ * The order is the order a group's cells are built in.
+ */
+const COLUMN_KINDS = ['added', 'removed', 'net'] as const
+type ColumnKind = (typeof COLUMN_KINDS)[number]
 
 /** A tally with each in-place change counted once as added and once as removed. */
 const foldModified = ({
   modified,
   ...tally
-}: CategoryTally): Record<ShownKind, ClocCounts> =>
+}: CategoryTally): Record<FoldedKind, ClocCounts> =>
   mapValues(tally, (counts) =>
     mapValues(counts, (count, field) => count + modified[field])
   )
@@ -63,6 +67,9 @@ const foldModified = ({
  * Each sign is spelled twice because a header carries it into the LaTeX, and
  * `−` (U+2212) is not an operator KaTeX knows, so it cannot be dropped in as
  * written.
+ *
+ * The net column takes no color of its own, its counts reading in whichever of
+ * the other two their sign matches.
  */
 const CHANGE_KIND_COLUMNS = {
   added: {
@@ -75,9 +82,13 @@ const CHANGE_KIND_COLUMNS = {
     latex: '-',
     color: '#e5534b', // red
   },
+  net: {
+    sign: 'Δ',
+    latex: '\\Delta',
+  },
 } as const satisfies Record<
-  ShownKind,
-  { sign: string; latex: string; color: string }
+  ColumnKind,
+  { sign: string; latex: string; color?: string }
 >
 
 /**
@@ -92,7 +103,7 @@ const COLUMN_GROUPS = [
 
 /** Every column a row has a cell for, flattened out of its group. */
 const COUNT_COLUMNS = COLUMN_GROUPS.flatMap((count) =>
-  SHOWN_KINDS.map((kind) => ({ kind, count }))
+  COLUMN_KINDS.map((kind) => ({ kind, count }))
 )
 
 /** Every column the table has: the label, plus one per sign. */
@@ -123,9 +134,44 @@ const hasAnyLine = (tally: CategoryTally) =>
  */
 const ZERO_COLOR = '#848d97' // gray
 
-/** The color a count reads in: its kind's, unless there is nothing to report. */
-const countColor = (kind: ShownKind, count: number) =>
-  count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[kind].color
+/**
+ * The column a count reads as: its own, or for a net count, an addition when
+ * the count grew and a removal when it shrank.
+ */
+const readsAs = (kind: ColumnKind, count: number): FoldedKind => {
+  if (kind === 'net') return count > 0 ? 'added' : 'removed'
+  return kind
+}
+
+/** The color a count reads in: the column it reads as, unless there is nothing to report. */
+const countColor = (kind: ColumnKind, count: number) =>
+  count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[readsAs(kind, count)].color
+
+/** One column's count out of a folded tally, the net one worked out from the other two. */
+const columnCount = (
+  folded: Record<FoldedKind, ClocCounts>,
+  kind: ColumnKind,
+  count: keyof ClocCounts
+) =>
+  kind === 'net'
+    ? folded.added[count] - folded.removed[count]
+    : folded[kind][count]
+
+/**
+ * A count as its cell writes it: a net one behind its sign, so a shrink reads
+ * as one, and any other bare.
+ */
+const cellText = (
+  kind: ColumnKind,
+  count: number,
+  { latex }: { latex: boolean }
+) => {
+  if (kind === 'net' && count !== 0) {
+    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[readsAs(kind, count)]
+    return `${latex ? latexSign : sign}${Math.abs(count)}`
+  }
+  return `${count}`
+}
 
 /** One run of colored LaTeX, the braces scoping the color to what it holds. */
 const coloredLatex = (color: string, body: string | number) =>
@@ -139,7 +185,7 @@ const boldLatex = (body: string | number) => `\\mathbf{${body}}`
 
 /** One count behind the sign its kind is written with, colored where asked. */
 const signedCount = (
-  kind: ShownKind,
+  kind: FoldedKind,
   count: number,
   { color }: { color: boolean }
 ) => {
@@ -173,40 +219,46 @@ const linesChangedStr = ({
 
 /** One count's cell, in the color its kind reads in unless color is off. */
 const countCell = (
-  kind: ShownKind,
+  kind: ColumnKind,
   count: number,
   { emphasise = false, color }: { emphasise?: boolean; color: boolean }
-) =>
-  td(
+) => {
+  const text = cellText(kind, count, { latex: color })
+  return td(
     color
       ? // A colored count is LaTeX, so it needs a blank line either side of it
         // to be read as LaTeX at all -- see `betweenBlankLines`.
         betweenBlankLines(
           coloredLatex(
             countColor(kind, count),
-            emphasise ? boldLatex(count) : count
+            emphasise ? boldLatex(text) : text
           )
         )
       : emphasise
-        ? bold(count)
-        : count,
+        ? bold(text)
+        : text,
     { align: 'right' }
   )
+}
 
 /**
  * The cell heading one column: its sign, in the color that column's counts read
- * in.
+ * in, or the net column's uncolored `Δ`.
  *
  * Only the sign, since the count it reports is named by the group header
  * spanning it.
  */
-const signCell = (kind: ShownKind, { color }: { color: boolean }) => {
-  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind]
+const signCell = (kind: ColumnKind, { color }: { color: boolean }) => {
+  const column = CHANGE_KIND_COLUMNS[kind]
+  const heading =
+    'color' in column
+      ? coloredLatex(column.color, column.latex)
+      : `$${column.latex}$`
   // A `<td>` rather than the `<th>` the row deserves: a colored sign is written
   // between blank lines, which leaves its content a paragraph, and the margin a
   // paragraph carries is reset inside a `<td>` but not inside a `<th>` -- so a
   // `<th>` row of them stands taller than the rows of counts below it.
-  return td(color ? betweenBlankLines(coloredLatex(kindColor, latex)) : sign, {
+  return td(color ? betweenBlankLines(heading) : column.sign, {
     align: 'center',
   })
 }
@@ -221,7 +273,7 @@ const row = (
   return [
     td(label),
     ...COUNT_COLUMNS.map(({ kind, count }) =>
-      countCell(kind, folded[kind][count], {
+      countCell(kind, columnCount(folded, kind, count), {
         emphasise: boldCode && count === 'code',
         color,
       })
@@ -306,7 +358,7 @@ export function renderMarkdown(
       tr(
         td('') +
           COLUMN_GROUPS.map((count) =>
-            th(count, { colspan: SHOWN_KINDS.length, align: 'center' })
+            th(count, { colspan: COLUMN_KINDS.length, align: 'center' })
           ).join('')
       ),
       // sign header row, one cell under each column of its group

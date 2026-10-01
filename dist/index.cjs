@@ -50009,10 +50009,7 @@ var CATEGORY_LABELS = {
   docs: "Docs",
   config: "Config"
 };
-var SHOWN_KINDS = [
-  "added",
-  "removed"
-];
+var COLUMN_KINDS = ["added", "removed", "net"];
 var foldModified = ({
   modified,
   ...tally
@@ -50032,6 +50029,10 @@ var CHANGE_KIND_COLUMNS = {
     latex: "-",
     color: "#e5534b"
     // red
+  },
+  net: {
+    sign: "\u0394",
+    latex: "\\Delta"
   }
 };
 var COLUMN_GROUPS = [
@@ -50039,7 +50040,7 @@ var COLUMN_GROUPS = [
   "comment"
 ];
 var COUNT_COLUMNS = COLUMN_GROUPS.flatMap(
-  (count) => SHOWN_KINDS.map((kind) => ({ kind, count }))
+  (count) => COLUMN_KINDS.map((kind) => ({ kind, count }))
 );
 var COLUMN_COUNT = 1 + COUNT_COLUMNS.length;
 var githubDiffTotalsSchema = external_exports.object({
@@ -50048,7 +50049,19 @@ var githubDiffTotalsSchema = external_exports.object({
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
 var ZERO_COLOR = "#848d97";
-var countColor = (kind, count) => count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[kind].color;
+var readsAs = (kind, count) => {
+  if (kind === "net") return count > 0 ? "added" : "removed";
+  return kind;
+};
+var countColor = (kind, count) => count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[readsAs(kind, count)].color;
+var columnCount = (folded, kind, count) => kind === "net" ? folded.added[count] - folded.removed[count] : folded[kind][count];
+var cellText = (kind, count, { latex }) => {
+  if (kind === "net" && count !== 0) {
+    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[readsAs(kind, count)];
+    return `${latex ? latexSign : sign}${Math.abs(count)}`;
+  }
+  return `${count}`;
+};
 var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
 var boldLatex = (body) => `\\mathbf{${body}}`;
 var signedCount = (kind, count, { color }) => {
@@ -50067,22 +50080,26 @@ var linesChangedStr = ({
   ].join(" / ");
   return color ? `${label} ${counts}` : unbreakable(`${label} ${counts}`);
 };
-var countCell = (kind, count, { emphasise = false, color }) => td(
-  color ? (
-    // A colored count is LaTeX, so it needs a blank line either side of it
-    // to be read as LaTeX at all -- see `betweenBlankLines`.
-    betweenBlankLines(
-      coloredLatex(
-        countColor(kind, count),
-        emphasise ? boldLatex(count) : count
+var countCell = (kind, count, { emphasise = false, color }) => {
+  const text = cellText(kind, count, { latex: color });
+  return td(
+    color ? (
+      // A colored count is LaTeX, so it needs a blank line either side of it
+      // to be read as LaTeX at all -- see `betweenBlankLines`.
+      betweenBlankLines(
+        coloredLatex(
+          countColor(kind, count),
+          emphasise ? boldLatex(text) : text
+        )
       )
-    )
-  ) : emphasise ? bold(count) : count,
-  { align: "right" }
-);
+    ) : emphasise ? bold(text) : text,
+    { align: "right" }
+  );
+};
 var signCell = (kind, { color }) => {
-  const { sign, latex, color: kindColor } = CHANGE_KIND_COLUMNS[kind];
-  return td(color ? betweenBlankLines(coloredLatex(kindColor, latex)) : sign, {
+  const column = CHANGE_KIND_COLUMNS[kind];
+  const heading = "color" in column ? coloredLatex(column.color, column.latex) : `$${column.latex}$`;
+  return td(color ? betweenBlankLines(heading) : column.sign, {
     align: "center"
   });
 };
@@ -50091,7 +50108,7 @@ var row = (label, tally, { boldCode = false, color }) => {
   return [
     td(label),
     ...COUNT_COLUMNS.map(
-      ({ kind, count }) => countCell(kind, folded[kind][count], {
+      ({ kind, count }) => countCell(kind, columnCount(folded, kind, count), {
         emphasise: boldCode && count === "code",
         color
       })
@@ -50144,7 +50161,7 @@ function renderMarkdown(tally, {
       // group header row: what each span of sign columns counts
       tr(
         td("") + COLUMN_GROUPS.map(
-          (count) => th(count, { colspan: SHOWN_KINDS.length, align: "center" })
+          (count) => th(count, { colspan: COLUMN_KINDS.length, align: "center" })
         ).join("")
       ),
       // sign header row, one cell under each column of its group

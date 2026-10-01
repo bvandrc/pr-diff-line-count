@@ -13,7 +13,7 @@ The result comes back three ways:
 The comment, and the summary table with it:
 
 <table>
-<tr><td></td><th colspan="2" align="center">code</th><th colspan="2" align="center">comment</th></tr>
+<tr><td></td><th colspan="3" align="center">code</th><th colspan="3" align="center">comment</th></tr>
 <tr><td></td>
 <td align="center">
 
@@ -27,12 +27,22 @@ ${\color{#e5534b}-}$
 </td>
 <td align="center">
 
+$\Delta$
+
+</td>
+<td align="center">
+
 ${\color{#2da44e}+}$
 
 </td>
 <td align="center">
 
 ${\color{#e5534b}-}$
+
+</td>
+<td align="center">
+
+$\Delta$
 
 </td></tr>
 <tr><td><strong>Source</strong></td>
@@ -48,12 +58,22 @@ ${\color{#e5534b}\mathbf{77}}$
 </td>
 <td align="right">
 
+${\color{#2da44e}\mathbf{+82}}$
+
+</td>
+<td align="right">
+
 ${\color{#2da44e}106}$
 
 </td>
 <td align="right">
 
 ${\color{#e5534b}42}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}+64}$
 
 </td></tr>
 <tr><td>Tests</td>
@@ -69,6 +89,11 @@ ${\color{#848d97}0}$
 </td>
 <td align="right">
 
+${\color{#2da44e}+12}$
+
+</td>
+<td align="right">
+
 ${\color{#2da44e}4}$
 
 </td>
@@ -76,11 +101,26 @@ ${\color{#2da44e}4}$
 
 ${\color{#848d97}0}$
 
+</td>
+<td align="right">
+
+${\color{#2da44e}+4}$
+
 </td></tr>
 <tr><td>Generated</td>
 <td align="right">
 
 ${\color{#2da44e}6}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
+${\color{#2da44e}+6}$
 
 </td>
 <td align="right">
@@ -111,6 +151,16 @@ ${\color{#848d97}0}$
 </td>
 <td align="right">
 
+${\color{#2da44e}+8}$
+
+</td>
+<td align="right">
+
+${\color{#848d97}0}$
+
+</td>
+<td align="right">
+
 ${\color{#848d97}0}$
 
 </td>
@@ -132,6 +182,11 @@ ${\color{#e5534b}77}$
 </td>
 <td align="right">
 
+${\color{#2da44e}+108}$
+
+</td>
+<td align="right">
+
 ${\color{#2da44e}110}$
 
 </td>
@@ -139,8 +194,13 @@ ${\color{#2da44e}110}$
 
 ${\color{#e5534b}42}$
 
+</td>
+<td align="right">
+
+${\color{#2da44e}+68}$
+
 </td></tr>
-<tr><td colspan="5" align="center">
+<tr><td colspan="7" align="center">
 
 <em>GitHub reports</em> ${\color{#2da44e}+329}$ / ${\color{#e5534b}-144}$
 
@@ -223,15 +283,17 @@ Set both to run outside a `pull_request` event. The comment is skipped when ther
 ## Reading the table
 
 - **`+ code` / `− code`** — lines added and removed, excluding comments and blank lines. A line changed in place counts once in each, the way GitHub counts it.
+- **`Δ code`** — the net change, added minus removed: how much the code grew (`+`) or shrank (`−`).
 - **Colors**
   - Each count, and the sign heading its column, reads in the color of its kind of change:
     - **green** — lines added
     - **red** — lines removed
+    - a **`Δ`** count reads green when it grew and red when it shrank, and its heading is left uncolored
     - **gray** — a zero, in whichever column it lands: nothing was added or removed, so it claims neither
   - GitHub strips `style` and `color` out of the HTML it renders, so the counts are set as LaTeX — the one thing it will color. They still select and copy as their own digits. Keeping the spanning `code` / `comment` header needs an HTML table, since a markdown table has no `colspan`, and a colored cell there has to be opened out over its own lines for its LaTeX to be read as LaTeX rather than as its own source. That is why the rendered output is several times the size of the table it draws.
   - LaTeX takes no theme, so a color cannot follow light and dark. All three are mid tones for that reason, rather than GitHub's own diff green and red, each of which only reads well against one background.
   - Set `color-counts: false` for plain numbers, which is what to do where the `markdown` output goes to a renderer that does no LaTeX.
-- **`+ comment` / `− comment`** — comment lines, parsed per language. The headline deliberately leaves them out.
+- **`+ comment` / `− comment` / `Δ comment`** — comment lines, parsed per language. The headline deliberately leaves them out.
 - Blank lines are counted but kept to a footnote.
 
 A category with no changes is left out of the table, and the `Total` row appears only when more than one category changed.

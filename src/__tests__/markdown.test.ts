@@ -71,15 +71,52 @@ describe('renderMarkdown', () => {
           'src/a.test.ts': { code: 7, comment: 2, blank: 1 },
         },
         // A line changed in place counts once as added and once as removed.
-        modified: { 'src/a.ts': { code: 5, comment: 3, blank: 2 } },
-        removed: { 'src/a.ts': { code: 9, comment: 42, blank: 3 } },
+        modified: {
+          'src/a.ts': { code: 5, comment: 3, blank: 2 },
+          'README.md': { code: 4 },
+        },
+        removed: {
+          'src/a.ts': { code: 9, comment: 42, blank: 3 },
+          'src/a.test.ts': { code: 10 },
+        },
       })
     )
 
-    // Distinct values in every column: the order is what this pins.
-    expect(getRowCells(markdown, 'Source')).toEqual(['96', '14', '109', '45'])
-    expect(getRowCells(markdown, 'Tests')).toEqual(['7', '0', '2', '0'])
-    expect(getRowCells(markdown, 'Total')).toEqual(['103', '14', '111', '45'])
+    // Each group is + / − / net: distinct values pin the order, and the net
+    // carries its sign, LaTeX's minus being the one a colored cell sets.
+    expect(getRowCells(markdown, 'Source')).toEqual([
+      '96',
+      '14',
+      '+82',
+      '109',
+      '45',
+      '+64',
+    ])
+    expect(getRowCells(markdown, 'Tests')).toEqual([
+      '7',
+      '10',
+      '-3',
+      '2',
+      '0',
+      '+2',
+    ])
+    // Edited in place and nothing more, so the net is unsigned.
+    expect(getRowCells(markdown, 'Docs')).toEqual([
+      '4',
+      '4',
+      '0',
+      '0',
+      '0',
+      '0',
+    ])
+    expect(getRowCells(markdown, 'Total')).toEqual([
+      '107',
+      '28',
+      '+79',
+      '111',
+      '45',
+      '+66',
+    ])
     // The footnote's counts are LaTeX by default, so the color comes off first.
     // Its minus is the one LaTeX sets rather than U+2212, and it keeps real
     // spaces rather than the `&nbsp;` a plain phrase is held together with.
@@ -87,6 +124,25 @@ describe('renderMarkdown', () => {
       'Blank lines are excluded above: +15 / -5.'
     )
     expect(markdown).not.toContain('Generated')
+  })
+
+  it('colors a net count by whether it grew or shrank', () => {
+    const markdown = render(
+      buildClocReport({
+        added: { 'src/a.ts': { code: 9 }, 'src/a.test.ts': { code: 1 } },
+        removed: { 'src/a.test.ts': { code: 4 } },
+      })
+    )
+    const getColor = (cell = '') => cell.match(/\\color\{([^}]+)\}/)?.[1]
+    const getNetCode = (label: string) =>
+      getTableRows(markdown).find(([cell]) => stripMarkup(cell) === label)?.[3]
+    // The second row heads the columns: the label's blank cell, then + and −.
+    const [, addedColor, removedColor] = getTableRows(markdown)[1].map(getColor)
+
+    // Two colors, or a cell with none would match a heading with none.
+    expect(addedColor).not.toBe(removedColor)
+    expect(getColor(getNetCode('Source'))).toBe(addedColor)
+    expect(getColor(getNetCode('Tests'))).toBe(removedColor)
   })
 
   it('writes no LaTeX when color is off', () => {

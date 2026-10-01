@@ -135,17 +135,17 @@ const hasAnyLine = (tally: CategoryTally) =>
 const ZERO_COLOR = '#848d97' // gray
 
 /**
- * The color a count reads in: its kind's, unless there is nothing to report.
- *
- * A net count reads as an addition when the count grew and a removal when it
- * shrank.
+ * The column a count reads as: its own, or for a net count, an addition when
+ * the count grew and a removal when it shrank.
  */
-const countColor = (kind: ColumnKind, count: number) => {
-  if (count === 0) return ZERO_COLOR
-  if (kind === 'net')
-    return CHANGE_KIND_COLUMNS[count > 0 ? 'added' : 'removed'].color
-  return CHANGE_KIND_COLUMNS[kind].color
+const readsAs = (kind: ColumnKind, count: number): FoldedKind => {
+  if (kind === 'net') return count > 0 ? 'added' : 'removed'
+  return kind
 }
+
+/** The color a count reads in: the column it reads as, unless there is nothing to report. */
+const countColor = (kind: ColumnKind, count: number) =>
+  count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[readsAs(kind, count)].color
 
 /** One column's count out of a folded tally, the net one worked out from the other two. */
 const columnCount = (
@@ -167,8 +167,7 @@ const cellText = (
   { latex }: { latex: boolean }
 ) => {
   if (kind === 'net' && count !== 0) {
-    const { sign, latex: latexSign } =
-      CHANGE_KIND_COLUMNS[count > 0 ? 'added' : 'removed']
+    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[readsAs(kind, count)]
     return `${latex ? latexSign : sign}${Math.abs(count)}`
   }
   return `${count}`

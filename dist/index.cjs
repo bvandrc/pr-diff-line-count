@@ -50049,16 +50049,15 @@ var githubDiffTotalsSchema = external_exports.object({
 });
 var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tally[kind]))) > 0;
 var ZERO_COLOR = "#848d97";
-var countColor = (kind, count) => {
-  if (count === 0) return ZERO_COLOR;
-  if (kind === "net")
-    return CHANGE_KIND_COLUMNS[count > 0 ? "added" : "removed"].color;
-  return CHANGE_KIND_COLUMNS[kind].color;
+var readsAs = (kind, count) => {
+  if (kind === "net") return count > 0 ? "added" : "removed";
+  return kind;
 };
+var countColor = (kind, count) => count === 0 ? ZERO_COLOR : CHANGE_KIND_COLUMNS[readsAs(kind, count)].color;
 var columnCount = (folded, kind, count) => kind === "net" ? folded.added[count] - folded.removed[count] : folded[kind][count];
 var cellText = (kind, count, { latex }) => {
   if (kind === "net" && count !== 0) {
-    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[count > 0 ? "added" : "removed"];
+    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[readsAs(kind, count)];
     return `${latex ? latexSign : sign}${Math.abs(count)}`;
   }
   return `${count}`;

@@ -50051,14 +50051,17 @@ var hasAnyLine = (tally) => sum(CHANGE_KINDS.flatMap((kind) => Object.values(tal
 var ZERO_COLOR = "#848d97";
 var countColor = (kind, count) => {
   if (count === 0) return ZERO_COLOR;
-  if (kind !== "net") return CHANGE_KIND_COLUMNS[kind].color;
-  return CHANGE_KIND_COLUMNS[count > 0 ? "added" : "removed"].color;
+  if (kind === "net")
+    return CHANGE_KIND_COLUMNS[count > 0 ? "added" : "removed"].color;
+  return CHANGE_KIND_COLUMNS[kind].color;
 };
 var columnCount = (folded, kind, count) => kind === "net" ? folded.added[count] - folded.removed[count] : folded[kind][count];
 var cellText = (kind, count, { latex }) => {
-  if (kind !== "net" || count === 0) return `${count}`;
-  const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[count > 0 ? "added" : "removed"];
-  return `${latex ? latexSign : sign}${Math.abs(count)}`;
+  if (kind === "net" && count !== 0) {
+    const { sign, latex: latexSign } = CHANGE_KIND_COLUMNS[count > 0 ? "added" : "removed"];
+    return `${latex ? latexSign : sign}${Math.abs(count)}`;
+  }
+  return `${count}`;
 };
 var coloredLatex = (color, body) => `\${\\color{${color}}${body}}$`;
 var boldLatex = (body) => `\\mathbf{${body}}`;

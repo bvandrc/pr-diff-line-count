@@ -142,8 +142,9 @@ const ZERO_COLOR = '#848d97' // gray
  */
 const countColor = (kind: ColumnKind, count: number) => {
   if (count === 0) return ZERO_COLOR
-  if (kind !== 'net') return CHANGE_KIND_COLUMNS[kind].color
-  return CHANGE_KIND_COLUMNS[count > 0 ? 'added' : 'removed'].color
+  if (kind === 'net')
+    return CHANGE_KIND_COLUMNS[count > 0 ? 'added' : 'removed'].color
+  return CHANGE_KIND_COLUMNS[kind].color
 }
 
 /** One column's count out of a folded tally, the net one worked out from the other two. */
@@ -165,10 +166,12 @@ const cellText = (
   count: number,
   { latex }: { latex: boolean }
 ) => {
-  if (kind !== 'net' || count === 0) return `${count}`
-  const { sign, latex: latexSign } =
-    CHANGE_KIND_COLUMNS[count > 0 ? 'added' : 'removed']
-  return `${latex ? latexSign : sign}${Math.abs(count)}`
+  if (kind === 'net' && count !== 0) {
+    const { sign, latex: latexSign } =
+      CHANGE_KIND_COLUMNS[count > 0 ? 'added' : 'removed']
+    return `${latex ? latexSign : sign}${Math.abs(count)}`
+  }
+  return `${count}`
 }
 
 /** One run of colored LaTeX, the braces scoping the color to what it holds. */

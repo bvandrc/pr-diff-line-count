@@ -8,7 +8,7 @@ runs:
     # Before setup-node, whose pnpm cache asks pnpm where its store lives.
     # The version comes from package.json's `packageManager`.
     - name: Setup pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@v6
 
     - name: Setup Node.js
       uses: actions/setup-node@v7

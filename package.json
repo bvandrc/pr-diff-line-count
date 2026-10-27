@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.5.1",
+  "packageManager": "pnpm@12.15.0",
   "description": "Count the code lines a pull request changes, with comments, blank lines, tests and generated files separated.",
   "license": "MIT",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6",
-    "@types/node": "^22",
+    "@types/node": "^24",
     "@types/picomatch": "^4",
     "esbuild": "^0.28",
     "tsx": "^4",

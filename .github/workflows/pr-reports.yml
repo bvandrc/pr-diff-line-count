@@ -34,7 +34,7 @@ jobs:
       # runs its own `pnpm install` for each of the two builds anyway. pnpm and
       # Node plus a warm store is all this job can usefully hand it.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v7

@@ -9,13 +9,13 @@ Conventions live outside this file, synced from https://github.com/bvandrc/bvand
 - @conventions/typescript.md — language-level TypeScript/JavaScript rules
 - @conventions/ts-testing-all.md — testing rules shared by every TypeScript suite: test IDs, naming, assertions
 - @conventions/ts-unit-testing.md — unit test layout, naming, fixtures, and assertions
-- @conventions/all.md — practice for every repo: branches, formatting, markdown, PR reviews
+- @conventions/all.md — practice for every repo: branches, formatting, writing, PR reviews
 
 `conventions/` is overwritten on every sync. Edit a rule upstream, never in that directory.
 
-`biome.jsonc` extends `conventions/biome.base.json`, so the lint and format rules are synced too rather than restated here. The local additions are excluding the build output and the synced `conventions/` from checks, and markdown's `proseWrap`.
+`biome.jsonc` extends `conventions/biome.base.json`, so the lint and format rules are synced too rather than restated here. The local addition is excluding the build output and the synced `conventions/` from checks.
 
-Biome formats markdown too (since 2.6). `proseWrap: "never"` enforces the no-hard-wrap rule rather than merely tolerating it — it unwraps a hard-wrapped paragraph instead of passing it. That also joins any two consecutive lines of plain text, so keep line-by-line content in a list or a table. Code fences are formatted too (the default), so a YAML example has to be a valid document at column zero: write a fragment under a `steps:` key rather than indenting it by hand, or Biome dedents it and the snippet stops being pasteable.
+Biome formats markdown too (since 2.6), and the base sets `proseWrap: "never"`, so a hard-wrapped paragraph is unwrapped rather than passed. That also joins any two consecutive lines of plain text, so keep line-by-line content in a list or a table. Code fences are formatted too (the default), so a YAML example has to be a valid document at column zero: write a fragment under a `steps:` key rather than indenting it by hand, or Biome dedents it and the snippet stops being pasteable.
 
 ## Commands
 

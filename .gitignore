@@ -1,4 +1,5 @@
 node_modules
+coverage
 *.tsbuildinfo
 
 # `dist/` is deliberately NOT ignored: a JS action runs the committed bundle.

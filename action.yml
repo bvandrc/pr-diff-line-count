@@ -8,7 +8,7 @@ branding:
 
 inputs:
   github-token:
-    description: "Token used to post the comment. Needs `pull-requests: write`."
+    description: 'Token used to post the comment. Needs `pull-requests: write`.'
     default: ${{ github.token }}
   comment:
     description: Post the table as a sticky pull request comment.

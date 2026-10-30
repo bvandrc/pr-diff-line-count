@@ -13,9 +13,7 @@ Conventions live outside this file, synced from https://github.com/bvandrc/bvand
 
 `conventions/` is overwritten on every sync. Edit a rule upstream, never in that directory.
 
-`biome.jsonc` extends `conventions/biome.base.jsonc`, so the lint and format rules are synced too rather than restated here. The local addition is excluding the build output and the synced `conventions/` from checks.
-
-Biome formats markdown too (since 2.6), and the base sets `proseWrap: "never"`, so a hard-wrapped paragraph is unwrapped rather than passed. That also joins any two consecutive lines of plain text, so keep line-by-line content in a list or a table. Code fences are formatted too (the default), so a YAML example has to be a valid document at column zero: write a fragment under a `steps:` key rather than indenting it by hand, or Biome dedents it and the snippet stops being pasteable.
+`biome.jsonc` extends `conventions/biome.base.jsonc`, so the lint and format rules are synced too rather than restated here.
 
 ## Commands
 

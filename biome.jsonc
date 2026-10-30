@@ -5,6 +5,6 @@
     // The committed action bundle is esbuild's output, not ours to lint or format.
     // It needs an explicit exclusion rather than .gitignore, since a JS action has
     // to commit its build.
-    "includes": ["**", "!!conventions", "!dist"]
+    "includes": ["**", "!!conventions", "!!**/coverage", "!dist"]
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["./conventions/biome.base.json"],
+  "extends": ["./conventions/biome.base.jsonc"],
   "files": {
     // The committed action bundle is esbuild's output, not ours to lint or format.
     // It needs an explicit exclusion rather than .gitignore, since a JS action has

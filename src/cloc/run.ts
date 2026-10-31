@@ -8,7 +8,7 @@ import { info } from '@actions/core'
 import { exec } from '@actions/exec'
 import { z } from 'zod'
 
-import type { OmitIndexSignatureDeep } from '../utils/type-utils.ts'
+import type { OmitIndexSignatureDeep } from '@/utils/type-utils.ts'
 import { downloadCloc } from './download.ts'
 
 export const CHANGE_KINDS = ['added', 'modified', 'removed'] as const

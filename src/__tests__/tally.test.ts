@@ -1,7 +1,7 @@
 import { mapValues } from 'es-toolkit'
 import type { PartialDeep } from 'type-fest'
 
-import type { ClocDiffReport } from '../cloc/run.ts'
+import type { ClocDiffReport } from '@/cloc/run.ts'
 import {
   type CategoryGlobs,
   DEFAULT_CATEGORY_GLOBS,

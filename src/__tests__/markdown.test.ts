@@ -1,10 +1,10 @@
 import { mapValues } from 'es-toolkit'
 import type { PartialDeep } from 'type-fest'
 
-import type { ClocDiffReport } from '../cloc/run.ts'
+import type { ClocDiffReport } from '@/cloc/run.ts'
+import { type CategoryGlobs, tallyDiff } from '@/tally.ts'
+import { bold, unbreakable } from '@/utils'
 import { type GithubDiffTotals, renderMarkdown } from '../markdown.ts'
-import { type CategoryGlobs, tallyDiff } from '../tally.ts'
-import { bold, unbreakable } from '../utils'
 
 /** Builds the `--by-file` shape from just the entries a case cares about. */
 const buildClocReport = (

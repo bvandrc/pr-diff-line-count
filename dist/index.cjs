@@ -50222,12 +50222,14 @@ function tallyDiff(report, globs) {
   return { byCategory, total };
 }
 
+// node_modules/.pnpm/ts-extras@1.3.0/node_modules/ts-extras/distribution/object-entries.js
+var objectEntries = Object.entries;
+
 // src/utils/index.ts
-var typedEntries = (o) => Object.entries(o);
 var unbreakable = (text) => text.replaceAll(" ", "&nbsp;");
 var bold = (content) => `<strong>${content}</strong>`;
 var italic = (content) => `<em>${content}</em>`;
-var attrsStr = (attrs) => typedEntries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
+var attrsStr = (attrs) => objectEntries(attrs).map(([name, value]) => ` ${name}="${value}"`).join("");
 var td = (content, attrs = {}) => `<td${attrsStr(attrs)}>${content}</td>`;
 var th = (content, attrs = {}) => `<th${attrsStr(attrs)}>${content}</th>`;
 var tr = (cells) => `<tr>${cells}</tr>`;

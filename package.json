@@ -7,13 +7,17 @@
   "description": "Count the code lines a pull request changes, with comments, blank lines, tests and generated files separated.",
   "license": "MIT",
   "scripts": {
+    "__c0": "====================[ Build & Development ]======================",
     "build": "esbuild src/index.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/index.cjs",
+    "__c1": "====================[ Linting & Type Checking ]==================",
+    "check": "pnpm ts:check && pnpm lint",
     "format": "biome check . --fix",
     "lint": "biome check .",
     "ts:check": "tsc",
+    "__c2": "====================[ Unit Testing ]=============================",
     "test": "pnpm test:unit",
     "test:unit": "vitest run",
-    "check": "pnpm ts:check && pnpm lint",
+    "__c3": "====================[ Misc ]=====================================",
     "cloc:check": "tsx script/check-cloc-version.ts"
   },
   "dependencies": {

@@ -28,8 +28,13 @@ vi.mock('@actions/github', () => ({
   getOctokit: vi.fn(() => octokit),
 }))
 
+/** A comment as `listComments` returns it, which is what the source pages through. */
+type IssueComment = Awaited<
+  ReturnType<ReturnType<typeof getOctokit>['rest']['issues']['listComments']>
+>['data'][number]
+
 /** Puts the run on a pull request carrying the given comments. */
-const onPullRequest = (comments: { id: number; body: string }[]) => {
+const mockPullRequest = (comments: Pick<IssueComment, 'id' | 'body'>[]) => {
   context.payload.pull_request = { number: 7 }
   Object.assign(context.repo, REPO)
   octokit.paginate.mockResolvedValue(comments)
@@ -41,7 +46,7 @@ describe('postStickyComment', () => {
   })
 
   it('posts a comment carrying the marker that finds it again', async () => {
-    onPullRequest([])
+    mockPullRequest([])
 
     await postStickyComment({ body: '### Report' })
 
@@ -53,7 +58,7 @@ describe('postStickyComment', () => {
   })
 
   it('edits the one it already left rather than adding another', async () => {
-    onPullRequest([
+    mockPullRequest([
       { id: 1, body: 'someone else' },
       { id: 2, body: `### Old\n\n${MARKER}` },
     ])
@@ -69,7 +74,7 @@ describe('postStickyComment', () => {
   })
 
   it('writes nothing when the comment already says this', async () => {
-    onPullRequest([{ id: 2, body: `### Same\n\n${MARKER}` }])
+    mockPullRequest([{ id: 2, body: `### Same\n\n${MARKER}` }])
 
     await postStickyComment({ body: '### Same' })
 

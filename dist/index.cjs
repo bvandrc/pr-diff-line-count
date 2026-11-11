@@ -50222,7 +50222,7 @@ function tallyDiff(report, globs) {
   return { byCategory, total };
 }
 
-// node_modules/.pnpm/ts-extras@1.3.0/node_modules/ts-extras/distribution/object-entries.js
+// node_modules/.pnpm/ts-extras@2.0.0/node_modules/ts-extras/distribution/object-entries.js
 var objectEntries = Object.entries;
 
 // src/utils/index.ts

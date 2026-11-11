@@ -27,7 +27,7 @@
     "@actions/tool-cache": "^4",
     "es-toolkit": "^1",
     "picomatch": "^4",
-    "ts-extras": "^1",
+    "ts-extras": "^2",
     "zod": "^4"
   },
   "devDependencies": {

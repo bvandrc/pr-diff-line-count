@@ -50087,8 +50087,8 @@ function _getGlobal(key, defaultValue) {
 
 // src/cloc/version.json
 var version_default = {
-  version: "2.10",
-  sha256: "bf59272455172108072a0a106379f7509fd4349bdcfd85203bac038ccd286d83"
+  version: "2.12",
+  sha256: "621592d34f835ef178115a1643f15ebc8e73ec1d47b5484c46376fc15b78f03e"
 };
 
 // src/cloc/download.ts
